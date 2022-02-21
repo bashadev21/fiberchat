@@ -993,94 +993,7 @@ class _GroupDetailsState extends State<GroupDetails> {
                               ],
                             ),
                           ),
-                          widget.currentUserno ==
-                                  groupDoc[Dbkeys.groupCREATEDBY]
-                              ? InkWell(
-                                  onTap: () {
-                                    showDialog(
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: new Text(getTranslated(
-                                              context, 'deletegroup')),
-                                          actions: [
-                                            // ignore: deprecated_member_use
-                                            FlatButton(
-                                              child: Text(
-                                                getTranslated(
-                                                    context, 'cancel'),
-                                                style: TextStyle(
-                                                    color: fiberchatgreen,
-                                                    fontSize: 18),
-                                              ),
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                            ),
-                                            // ignore: deprecated_member_use
-                                            FlatButton(
-                                              child: Text(
-                                                getTranslated(
-                                                    context, 'delete'),
-                                                style: TextStyle(
-                                                    color: Colors.red,
-                                                    fontSize: 18),
-                                              ),
-                                              onPressed: () async {
-                                                Navigator.of(context).pop();
-                                                Navigator.of(context).pop();
-                                                Navigator.of(context).pop();
-
-                                                Future.delayed(
-                                                    const Duration(
-                                                        milliseconds: 500),
-                                                    () async {
-                                                  await FirebaseFirestore
-                                                      .instance
-                                                      .collection(DbPaths
-                                                          .collectiongroups)
-                                                      .doc(widget.groupID)
-                                                      .get()
-                                                      .then((doc) async {
-                                                    await doc.reference
-                                                        .delete();
-                                                  });
-
-                                                  await FirebaseFirestore
-                                                      .instance
-                                                      .collection(DbPaths
-                                                          .collectiontemptokensforunsubscribe)
-                                                      .doc(widget.groupID)
-                                                      .delete();
-                                                  //No need to delete the media data from here as it will be deleted automatically using Cloud functions deployed in Firebase once the .doc is deleted .
-                                                });
-                                              },
-                                            )
-                                          ],
-                                        );
-                                      },
-                                      context: context,
-                                    );
-                                  },
-                                  child: Container(
-                                      alignment: Alignment.center,
-                                      margin:
-                                          EdgeInsets.fromLTRB(10, 30, 10, 30),
-                                      width: MediaQuery.of(context).size.width,
-                                      height: 48.0,
-                                      decoration: new BoxDecoration(
-                                        color: Colors.red[700],
-                                        borderRadius:
-                                            new BorderRadius.circular(5.0),
-                                      ),
-                                      child: Text(
-                                        getTranslated(context, 'deletegroup'),
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 16),
-                                      )),
-                                )
-                              : InkWell(
+                             InkWell(
                                   onTap: () {
                                     showDialog(
                                       builder: (BuildContext context) {
@@ -1258,7 +1171,94 @@ class _GroupDetailsState extends State<GroupDetails> {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16),
                                       )),
-                                )
+                                ),
+                          widget.currentUserno ==
+                                  groupDoc[Dbkeys.groupCREATEDBY] ?
+                         InkWell(
+                                  onTap: () {
+                                    showDialog(
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: new Text(getTranslated(
+                                              context, 'deletegroup')),
+                                          actions: [
+                                            // ignore: deprecated_member_use
+                                            FlatButton(
+                                              child: Text(
+                                                getTranslated(
+                                                    context, 'cancel'),
+                                                style: TextStyle(
+                                                    color: fiberchatgreen,
+                                                    fontSize: 18),
+                                              ),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                            ),
+                                            // ignore: deprecated_member_use
+                                            FlatButton(
+                                              child: Text(
+                                                getTranslated(
+                                                    context, 'delete'),
+                                                style: TextStyle(
+                                                    color: Colors.red,
+                                                    fontSize: 18),
+                                              ),
+                                              onPressed: () async {
+                                                Navigator.of(context).pop();
+                                                Navigator.of(context).pop();
+                                                Navigator.of(context).pop();
+
+                                                Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 500),
+                                                    () async {
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection(DbPaths
+                                                          .collectiongroups)
+                                                      .doc(widget.groupID)
+                                                      .get()
+                                                      .then((doc) async {
+                                                    await doc.reference
+                                                        .delete();
+                                                  });
+
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection(DbPaths
+                                                          .collectiontemptokensforunsubscribe)
+                                                      .doc(widget.groupID)
+                                                      .delete();
+                                                  //No need to delete the media data from here as it will be deleted automatically using Cloud functions deployed in Firebase once the .doc is deleted .
+                                                });
+                                              },
+                                            )
+                                          ],
+                                        );
+                                      },
+                                      context: context,
+                                    );
+                                  },
+                                  child: Container(
+                                      alignment: Alignment.center,
+                                      margin:
+                                          EdgeInsets.fromLTRB(10, 30, 10, 30),
+                                      width: MediaQuery.of(context).size.width,
+                                      height: 48.0,
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red[700],
+                                        borderRadius:
+                                            new BorderRadius.circular(5.0),
+                                      ),
+                                      child: Text(
+                                        getTranslated(context, 'deletegroup'),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 16),
+                                      )),
+                                ) : SizedBox(), 
                         ],
                       ),
                       Positioned(
