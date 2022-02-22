@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "758415451822",
+    "project_id": "punk-panda-8fcc6",
+    "storage_bucket": "punk-panda-8fcc6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:758415451822:android:98e5ab69af331a2e68af3f",
+        "android_client_info": {
+          "package_name": "com.teckzy.punkPanda"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "758415451822-l87b0ur7kup6qsbgf3qg5dhfr6tp8akm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.teckzy.punkPanda",
+            "certificate_hash": "07df0d48e8eca1a135293a457b062ac57d919130"
+          }
+        },
+        {
+          "client_id": "758415451822-qgvede2dp02ej651n2hor802dauj62pa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVFAgfqZHryDyQbCk-slXF4KL6Lm7qPFs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "758415451822-qgvede2dp02ej651n2hor802dauj62pa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
