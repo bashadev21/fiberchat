@@ -131,7 +131,7 @@ class UserProvider with ChangeNotifier {
       isLoading2 = false;
       isverficationsent = true;
       notifyListeners();
-      controller.animateToPage(2,
+      controller.animateToPage(3,
           duration: Duration(milliseconds: 500), curve: Curves.ease);
 
     };
@@ -200,7 +200,7 @@ class UserProvider with ChangeNotifier {
   Future checkInvitation() async {
     var url = Uri.parse(
         'http://www.pandasapi.com/panda_chat/api/check_ref_code?ref_code=${refCode.text}');
-
+print(url.toString());
     var response = await http.get(
       url,
     );
@@ -209,13 +209,107 @@ class UserProvider with ChangeNotifier {
     var data = json.decode(jsonBody);
     if (response.statusCode == 200) {
       if (data['status'] == 'SUCCESS') {
-        controller.animateToPage(1,
+        controller.animateToPage(2,
             duration: Duration(milliseconds: 500), curve: Curves.ease);
       } else {
         Fiberchat.toast(data['msg']);
       }
       notifyListeners();
     } else {
+      notifyListeners();
+    }
+  }
+
+  Future checkmobile(context, isaccountapprovalbyadminneeded,
+      accountApprovalMessage, prefs, issecutitysetupdone) async {
+    isLoading = true;
+    print(usermobile.text);
+    verifyPhoneNumber(context, isaccountapprovalbyadminneeded,
+        accountApprovalMessage, prefs, issecutitysetupdone);
+    // var url = Uri.parse(
+    //     'http://www.pandasapi.com/panda_chat/api/check_mob?reg_mob=${usermobile.text}');
+    // print(url.toString());
+    // var response = await http.get(
+    //   url,
+    // );
+    //
+    // var jsonBody = response.body;
+    // var data = json.decode(jsonBody);
+    // if (response.statusCode == 200) {
+    //   if (data['status'] == 'SUCCESS') {
+    //     verifyPhoneNumber(context, isaccountapprovalbyadminneeded,
+    //         accountApprovalMessage, prefs, issecutitysetupdone);
+    //     // controller.animateToPage(2,
+    //     //     duration: Duration(milliseconds: 500), curve: Curves.ease);
+    //   } else {
+    //     isLoading = false;
+    //     Fiberchat.toast(data['msg']);
+    //   }
+    //   notifyListeners();
+    // } else {
+    //   isLoading = false;
+    //   notifyListeners();
+    // }
+  }
+
+
+  Future checkemail() async {
+    isLoading = true;
+
+
+    var url = Uri.parse(
+        'http://www.pandasapi.com/panda_chat/api/check_em?reg_em=${email.text}');
+    print(url.toString());
+    var response = await http.get(
+      url,
+    );
+
+    var jsonBody = response.body;
+    var data = json.decode(jsonBody);
+    if (response.statusCode == 200) {
+      if (data['status'] == 'SUCCESS') {
+        generateOTP();
+        // controller.animateToPage(3,
+        //     duration: Duration(milliseconds: 500), curve: Curves.ease);
+
+      } else {
+        isLoading = false;
+        Fiberchat.toast(data['msg']);
+      }
+      notifyListeners();
+    } else {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+
+  Future generateOTP() async {
+    isLoading = true;
+
+
+    var url = Uri.parse(
+        'http://www.pandasapi.com/panda_chat/api/send_reg_otp?reg_em=${email.text}&ip_addr=1.2.3.4');
+    print(url.toString());
+    var response = await http.get(
+      url,
+    );
+
+    var jsonBody = response.body;
+    var data = json.decode(jsonBody);
+    if (response.statusCode == 200) {
+      if (data['status'] == 'SUCCESS') {
+
+        controller.animateToPage(4,
+            duration: Duration(milliseconds: 500), curve: Curves.ease);
+        isLoading=false;
+      } else {
+        isLoading = false;
+        Fiberchat.toast(data['msg']);
+      }
+      notifyListeners();
+    } else {
+      isLoading = false;
       notifyListeners();
     }
   }

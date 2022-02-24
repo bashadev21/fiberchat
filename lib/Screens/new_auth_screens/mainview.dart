@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'email.dart';
 import 'invitation.dart';
+import 'login_seperator.dart';
 import 'mobile.dart';
 import 'name.dart';
 import 'otp.dart';
@@ -49,19 +50,20 @@ class _MainViewAuthState extends State<MainViewAuth> {
               userProvider.currentIndex != 0
                   ? FloatingActionButton(
                       onPressed: () {
-                        if(userProvider.currentIndex ==1){
-                          userProvider.controller.animateToPage(0,  duration: Duration(milliseconds: 500), curve: Curves.ease);
-                        }else if(userProvider.currentIndex ==2){
-                          userProvider.controller.animateToPage(1,  duration: Duration(milliseconds: 500), curve: Curves.ease);
-
-                        }else if(userProvider.currentIndex ==3){
-                          userProvider.controller.animateToPage(2,  duration: Duration(milliseconds: 500), curve: Curves.ease);
-
-                        }
-                        else if(userProvider.currentIndex ==4){
-                          userProvider.controller.animateToPage(3,  duration: Duration(milliseconds: 500), curve: Curves.ease);
-
-                        }
+                        userProvider.controller.previousPage(duration: Duration(milliseconds: 500), curve: Curves.ease);
+                        // if(userProvider.currentIndex ==1){
+                        //   userProvider.controller.animateToPage(0,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+                        // }else if(userProvider.currentIndex ==2){
+                        //   userProvider.controller.animateToPage(1,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+                        //
+                        // }else if(userProvider.currentIndex ==3){
+                        //   userProvider.controller.animateToPage(2,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+                        //
+                        // }
+                        // else if(userProvider.currentIndex ==4){
+                        //   userProvider.controller.animateToPage(3,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+                        //
+                        // }
                       },
                       child: Icon(Icons.arrow_back),
                     )
@@ -74,25 +76,44 @@ class _MainViewAuthState extends State<MainViewAuth> {
                   if(userProvider.currentIndex ==0){
                     userProvider.controller.animateToPage(1,  duration: Duration(milliseconds: 500), curve: Curves.ease);
                   }else if(userProvider.currentIndex ==1){
+                    if( userProvider.refCode.text.length!=8){
+                      Fiberchat.toast(
+                          'Enter valid invitation code'
+                      );
+                    }else{
+                      userProvider.checkInvitation();
+                    }
+
+
+
+                  }else if(userProvider.currentIndex ==2){
                     if(userProvider.usermobile.text.isEmpty){
                       Fiberchat.toast('Please enter mobile number !');
                     }else{
-                      userProvider.verifyPhoneNumber(context,widget.isaccountapprovalbyadminneeded, widget.accountApprovalMessage,widget.prefs,widget.issecutitysetupdone);
+                      userProvider.checkmobile(context,widget.isaccountapprovalbyadminneeded, widget.accountApprovalMessage,widget.prefs,widget.issecutitysetupdone);
+                      // userProvider.verifyPhoneNumber(context,widget.isaccountapprovalbyadminneeded, widget.accountApprovalMessage,widget.prefs,widget.issecutitysetupdone);
                     }
 
-                  }else if(userProvider.currentIndex ==2){
-                    userProvider.controller.animateToPage(3,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+               //     userProvider.controller.animateToPage(3,  duration: Duration(milliseconds: 500), curve: Curves.ease);
 
                   }else if(userProvider.currentIndex ==3){
+                    if(userProvider.email.text.contains('@')){
+                      userProvider.checkemail();
+                    }else{
+                      Fiberchat.toast('Please enter valid email !');
+                    }
+
+
+                  }else if(userProvider.currentIndex ==4){
                     if(userProvider.otpfield.text.length!=6){
                       Fiberchat.toast('Enter valid otp !');
                     }else{
-                      userProvider.controller.animateToPage(4,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+                      userProvider.controller.animateToPage(5,  duration: Duration(milliseconds: 500), curve: Curves.ease);
 
                     }
 
-                  }else if(userProvider.currentIndex ==4){
 
+                  }else if(userProvider.currentIndex==5){
                     userProvider.username.text=userProvider.firstname.text+userProvider.lastname.text;
                     print(userProvider.codeverify);
                     userProvider.handleSignIn( context, widget.isaccountapprovalbyadminneeded, widget.accountApprovalMessage, widget.prefs, widget.issecutitysetupdone);
@@ -102,7 +123,7 @@ class _MainViewAuthState extends State<MainViewAuth> {
                 },
                 child:prov.isLoading?CircularProgressIndicator(
                   color: Colors.white,
-                ): Icon(userProvider.currentIndex==4?Icons.check:Icons.arrow_forward),
+                ): Icon(userProvider.currentIndex==5?Icons.check:Icons.arrow_forward),
               ):SizedBox()),
             ],
           ),
@@ -147,23 +168,13 @@ class _MainViewAuthState extends State<MainViewAuth> {
 
                     },
                     controller: userProvider.controller,
-                    itemCount: 5,
+                    itemCount: 6,
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (context, i) {
                       return Container(
                         child: i == 0
-                            ? InvitationWidget()
-                            : i == 1?MobileWidget(
-                            prefs: widget.prefs,
-                            accountApprovalMessage:
-                            widget.accountApprovalMessage,
-                            isaccountapprovalbyadminneeded:
-                            widget.isaccountapprovalbyadminneeded,
-                            isblocknewlogins:widget.isblocknewlogins,
-                            title: getTranslated(context, 'signin'),
-                            issecutitysetupdone:
-                            widget.issecutitysetupdone,
-                        )
+                            ? AuthSeperator()
+                            : i == 1?InvitationWidget()
                         //         ? LoginScreen(
                         //   prefs: widget.prefs,
                         //   accountApprovalMessage:
@@ -177,12 +188,22 @@ class _MainViewAuthState extends State<MainViewAuth> {
                         //
                         // )
                                 : i == 2
-                                    ? EmailWiget()
+                                    ?MobileWidget(
+                          prefs: widget.prefs,
+                          accountApprovalMessage:
+                          widget.accountApprovalMessage,
+                          isaccountapprovalbyadminneeded:
+                          widget.isaccountapprovalbyadminneeded,
+                          isblocknewlogins:widget.isblocknewlogins,
+                          title: getTranslated(context, 'signin'),
+                          issecutitysetupdone:
+                          widget.issecutitysetupdone,
+                        )
                                     : i == 3
-                                        ? OtpWidget()
+                                        ? EmailWiget1()
                                         : i == 4
-                                            ? NameWidget()
-                                            : Container(),
+                                            ?OtpWidget()
+                                            : i == 5? NameWidget(): Container(),
                       );
                     }),
               ),

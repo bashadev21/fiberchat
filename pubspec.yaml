@@ -125,4 +125,5 @@ flutter:
     - assets/sounds/ringtone.mp3
     - assets/sounds/whistle.mp3
     - assets/flags/
+    - assets/appicon/
     - lib/Services/localization/json_languages/
