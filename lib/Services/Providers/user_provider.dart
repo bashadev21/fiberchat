@@ -57,6 +57,39 @@ class UserProvider with ChangeNotifier {
   User? currentUser;
   String? deviceid;
   var mapDeviceInfo = {};
+  String currentCallToken = '';
+  String currentCallUID = '';
+
+  getCurrentCallToken() async {
+    return currentCallToken;
+  }
+
+  getCurrentCallUID() async {
+    return currentCallUID;
+  }
+
+  getRTCToken() async {
+    var url = Uri.parse(
+        'http://punkpanda.teckzy.co.in/sample/RtcTokenBuilderSample.php');
+
+    var response = await http.get(
+      url,
+    );
+
+    var jsonBody = response.body;
+    var data = json.decode(jsonBody);
+    if (response.statusCode == 200) {
+      print('RTC TOKEN RECIEVED:');
+      print(data[0]['Token with user account:']);
+
+      // Update Token in User Provider
+      currentCallToken = data[0]['Token with user account:'];
+      currentCallUID = data[0]['Token with int uid:'];
+    }
+    else {
+      Fiberchat.toast(data['msg']);
+    }
+  }
 
   setdeviceinfo() async {
     if (Platform.isAndroid == true) {
