@@ -32,6 +32,21 @@ class Message {
       required onTap,
       required onLongPress,
       required bool saved}) {
+
+    if(child.child!.isMssgDeleted)
+    return child.child!.isMe
+        ? GestureDetector(
+      child: child,
+      onTap: onTap,
+      onDoubleTap: onDoubleTap,
+      onLongPress: onLongPress,
+    )
+        : GestureDetector(
+      child: child,
+      onDoubleTap: onDoubleTap,
+      onTap: onTap,
+      onLongPress: onLongPress,
+    );
     return Dismissible(
         direction: DismissDirection.startToEnd,
         key: Key(child.timestamp!),

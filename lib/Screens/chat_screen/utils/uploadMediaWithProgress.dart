@@ -31,21 +31,22 @@ openUploadDialog(
         ),
         progressColor: Colors.green[400],
       ),
-      Container(
-        width: 195,
-        padding: EdgeInsets.only(left: 3),
-        child: ListTile(
-          dense: false,
-          title: Text(
-            title,
-            textAlign: TextAlign.left,
-            style: TextStyle(
-                height: 1.3, fontWeight: FontWeight.w600, fontSize: 14),
-          ),
-          subtitle: Text(
-            subtitle,
-            textAlign: TextAlign.left,
-            style: TextStyle(height: 2.2, color: fiberchatGrey),
+      Expanded(
+        child: Container(
+          padding: EdgeInsets.only(left: 3),
+          child: ListTile(
+            dense: false,
+            title: Text(
+              title,
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                  height: 1.3, fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            subtitle: Text(
+              subtitle,
+              textAlign: TextAlign.left,
+              style: TextStyle(height: 2.2, color: fiberchatGrey),
+            ),
           ),
         ),
       ),

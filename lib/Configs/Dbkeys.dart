@@ -308,6 +308,10 @@ class Dbkeys {
   static final String phonenumbervariants = 'phonenumbervariants';
   static final String isbroadcast = 'isbroadcast';
   static final String broadcastLocations = 'broadcastLocations';
+  static final String pinChat = 'pinChat';
+  static final String isPin = 'isPin';
+  static final String statusBlock = 'statusBlock';
+  static final String priorityIndex = 'priorityIndex';
   //---
   static final String notificationStringsMap = 'notificationsMap';
   static final String isNotificationStringsMulitilanguageEnabled =
@@ -334,6 +338,7 @@ class Dbkeys {
   static final String isReply = 'isReply';
   static final String replyToMsgDoc = 'replyToMsgDoc';
   static final String isForward = 'isForward';
+  static final String userStarList= 'userStarList';
   //--
   static final String maxNoOfFilesInMultiSharing = 'maxNoOfFilesInMultiSharing';
   static final String maxNoOfContactsSelectForForward =

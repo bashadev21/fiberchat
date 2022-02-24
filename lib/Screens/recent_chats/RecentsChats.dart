@@ -6,12 +6,14 @@ import 'dart:core';
 import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:fiberchat/Configs/Dbkeys.dart';
 import 'package:fiberchat/Configs/Dbpaths.dart';
 import 'package:fiberchat/Configs/app_constants.dart';
 import 'package:fiberchat/Screens/Groups/AddContactsToGroup.dart';
 import 'package:fiberchat/Screens/Groups/GroupChatPage.dart';
 import 'package:fiberchat/Screens/contact_screens/SmartContactsPage.dart';
+import 'package:fiberchat/Screens/homepage/homepage.dart';
 import 'package:fiberchat/Services/Admob/admob.dart';
 import 'package:fiberchat/Services/Providers/BroadcastProvider.dart';
 import 'package:fiberchat/Services/Providers/GroupChatProvider.dart';
@@ -62,7 +64,6 @@ class RecentChatsState extends State<RecentChats> {
   bool isAuthenticating = false;
 
   List<StreamSubscription> unreadSubscriptions = [];
-  List<String> _selectedUser = [];
   List<StreamController> controllers = [];
   final BannerAd myBanner = BannerAd(
     adUnitId: getBannerAdUnitId()!,
@@ -76,6 +77,7 @@ class RecentChatsState extends State<RecentChats> {
   void initState() {
     super.initState();
     Fiberchat.internetLookUp();
+    print("RecentChatsState  ==>  RecentChatsState");
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
       final observer = Provider.of<Observer>(this.context, listen: false);
       if (IsBannerAdShow == true && observer.isadmobshow == true) {
@@ -126,90 +128,92 @@ class RecentChatsState extends State<RecentChats> {
               child: Column(
                 children: [
                   ListTile(
-                      contentPadding: EdgeInsets.fromLTRB(20, 8, 20, 8),
-                      onLongPress: () {
-                        _selectedUser.add(userKey);
-                        setState(() {});
-                        widget.isPinUnPinBtnShow(_selectedUser.isNotEmpty);
-                        // unawaited(showDialog(
-                        //     context: context,
-                        //     builder: (context) {
-                        //       return AliasForm(user, _cachedModel);
-                        //     }));
-                      },
-                      leading: Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          customCircleAvatar(url: user['photoUrl'], radius: 22),
-                          if (_selectedUser.contains(userKey))
-                            Container(
-                              padding: EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                size: 15,
-                              ),
-                            )
-                        ],
-                      ),
-                      title: Text(
-                        Fiberchat.getNickname(user)!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: fiberchatBlack,
-                          fontSize: 16,
+                    contentPadding: EdgeInsets.fromLTRB(20, 8, 20, 8),
+                    onLongPress: () {
+                      selectedUser.add(userKey);
+                      setState(() {});
+                      widget.isPinUnPinBtnShow(selectedUser.isNotEmpty);
+                      // unawaited(showDialog(
+                      //     context: context,
+                      //     builder: (context) {
+                      //       return AliasForm(user, _cachedModel);
+                      //     }));
+                    },
+                    leading: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        customCircleAvatar(url: user['photoUrl'], radius: 22),
+                        if (selectedUser.contains(userKey))
+                          Container(
+                            padding: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 15,
+                            ),
+                          )
+                      ],
+                    ),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            Fiberchat.getNickname(user)!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: fiberchatBlack,
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
-                      ),
-                      onTap: () {
-                        if (_selectedUser.isNotEmpty) {
-                          _userSelectUnSelect(userKey: userKey);
-                          return;
-                        }
-                        if (_cachedModel!.currentUser![Dbkeys.locked] != null &&
-                            _cachedModel!.currentUser![Dbkeys.locked]
-                                .contains(user[Dbkeys.phone])) {
-                          if (widget.prefs.getString(Dbkeys.isPINsetDone) !=
-                                  currentUserNo ||
-                              widget.prefs.getString(Dbkeys.isPINsetDone) ==
-                                  null) {
-                            ChatController.unlockChat(
-                                currentUserNo, user[Dbkeys.phone] as String?);
-                            Navigator.push(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) => new ChatScreen(
-                                        isSharingIntentForwarded: false,
-                                        prefs: widget.prefs,
-                                        unread: unread,
-                                        model: _cachedModel!,
-                                        currentUserNo: currentUserNo,
-                                        peerNo:
-                                            user[Dbkeys.phone] as String?)));
-                          } else {
-                            NavigatorState state = Navigator.of(context);
-                            ChatController.authenticate(_cachedModel!,
-                                getTranslated(context, 'auth_neededchat'),
-                                state: state,
-                                shouldPop: false,
-                                type: Fiberchat.getAuthenticationType(
-                                    biometricEnabled, _cachedModel),
-                                prefs: widget.prefs, onSuccess: () {
-                              state.pushReplacement(new MaterialPageRoute(
-                                  builder: (context) => new ChatScreen(
-                                      isSharingIntentForwarded: false,
-                                      prefs: widget.prefs,
-                                      unread: unread,
-                                      model: _cachedModel!,
-                                      currentUserNo: currentUserNo,
-                                      peerNo: user[Dbkeys.phone] as String?)));
-                            });
-                          }
-                        } else {
+                        unread != 0
+                            ? Container(
+                                child: Text(unread.toString(),
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)),
+                                padding: const EdgeInsets.all(7.0),
+                                decoration: new BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: user[Dbkeys.lastSeen] == true
+                                      ? Colors.green[400]
+                                      : Colors.blue[400],
+                                ),
+                              )
+                            : user[Dbkeys.lastSeen] == true
+                                ? Container(
+                                    child: Container(width: 0, height: 0),
+                                    padding: const EdgeInsets.all(7.0),
+                                    decoration: new BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.green[400]),
+                                  )
+                                : SizedBox(
+                                    height: 0,
+                                    width: 0,
+                                  ),
+                      ],
+                    ),
+                    onTap: () {
+                      if (selectedUser.isNotEmpty) {
+                        _userSelectUnSelect(userKey: userKey);
+                        return;
+                      }
+                      if (_cachedModel!.currentUser![Dbkeys.locked] != null &&
+                          _cachedModel!.currentUser![Dbkeys.locked]
+                              .contains(user[Dbkeys.phone])) {
+                        if (widget.prefs.getString(Dbkeys.isPINsetDone) !=
+                                currentUserNo ||
+                            widget.prefs.getString(Dbkeys.isPINsetDone) ==
+                                null) {
+                          ChatController.unlockChat(
+                              currentUserNo, user[Dbkeys.phone] as String?);
                           Navigator.push(
                               context,
                               new MaterialPageRoute(
@@ -220,35 +224,48 @@ class RecentChatsState extends State<RecentChats> {
                                       model: _cachedModel!,
                                       currentUserNo: currentUserNo,
                                       peerNo: user[Dbkeys.phone] as String?)));
+                        } else {
+                          NavigatorState state = Navigator.of(context);
+                          ChatController.authenticate(_cachedModel!,
+                              getTranslated(context, 'auth_neededchat'),
+                              state: state,
+                              shouldPop: false,
+                              type: Fiberchat.getAuthenticationType(
+                                  biometricEnabled, _cachedModel),
+                              prefs: widget.prefs, onSuccess: () {
+                            state.pushReplacement(new MaterialPageRoute(
+                                builder: (context) => new ChatScreen(
+                                    isSharingIntentForwarded: false,
+                                    prefs: widget.prefs,
+                                    unread: unread,
+                                    model: _cachedModel!,
+                                    currentUserNo: currentUserNo,
+                                    peerNo: user[Dbkeys.phone] as String?)));
+                          });
                         }
-                      },
-                      trailing: unread != 0
-                          ? Container(
-                              child: Text(unread.toString(),
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold)),
-                              padding: const EdgeInsets.all(7.0),
-                              decoration: new BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: user[Dbkeys.lastSeen] == true
-                                    ? Colors.green[400]
-                                    : Colors.blue[400],
-                              ),
-                            )
-                          : user[Dbkeys.lastSeen] == true
-                              ? Container(
-                                  child: Container(width: 0, height: 0),
-                                  padding: const EdgeInsets.all(7.0),
-                                  decoration: new BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.green[400]),
-                                )
-                              : SizedBox(
-                                  height: 0,
-                                  width: 0,
-                                )),
+                      } else {
+                        Navigator.push(
+                            context,
+                            new MaterialPageRoute(
+                                builder: (context) => new ChatScreen(
+                                    isSharingIntentForwarded: false,
+                                    prefs: widget.prefs,
+                                    unread: unread,
+                                    model: _cachedModel!,
+                                    currentUserNo: currentUserNo,
+                                    peerNo: user[Dbkeys.phone] as String?)));
+                      }
+                    },
+                    subtitle: (user[Dbkeys.isPin] ?? false)
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (user[Dbkeys.isPin] ?? false)
+                               _chatPin(),
+                            ],
+                          )
+                        : null,
+                  ),
                   Divider(
                     height: 0,
                   ),
@@ -263,13 +280,13 @@ class RecentChatsState extends State<RecentChats> {
     if (userKey == null) {
       return;
     }
-    if (_selectedUser.contains(userKey)) {
-      _selectedUser.remove(userKey);
+    if (selectedUser.contains(userKey)) {
+      selectedUser.remove(userKey);
     } else {
-      _selectedUser.add(userKey);
+      selectedUser.add(userKey);
     }
     setState(() {});
-    widget.isPinUnPinBtnShow(_selectedUser.isNotEmpty);
+    widget.isPinUnPinBtnShow(selectedUser.isNotEmpty);
   }
 
   Stream<MessageData> getUnread(Map<String, dynamic> user) {
@@ -313,9 +330,19 @@ class RecentChatsState extends State<RecentChats> {
         builder: (context, groupList, _child) => Consumer<List<BroadcastModel>>(
                 builder: (context, broadcastList, _child) {
               _streamDocSnap.clear();
+
               Map.from(_userData).forEach((key, value) {
                 if ((value).containsKey(Dbkeys.chatStatus)) {
                   value["key"] = key;
+                  if (!pinUserList.contains(key)) {
+                    value[Dbkeys.isPin] = false;
+                    value[Dbkeys.priorityIndex] =
+                        ((_userData.keys.length + 20) * 200);
+                  } else {
+                    value[Dbkeys.priorityIndex] =
+                        pinUserList.indexOf(key.toString());
+                    value[Dbkeys.isPin] = true;
+                  }
                   _streamDocSnap.add(value as Map<String, dynamic>);
                 }
               });
@@ -323,9 +350,30 @@ class RecentChatsState extends State<RecentChats> {
               List<Map<String, dynamic>> filtered =
                   List.from(<Map<String, dynamic>>[]);
               groupList.forEach((element) {
+                log("message groupList ==>   ${element.docmap}");
+                element.docmap["key"] = element.docmap["id"];
+                if (pinUserList.contains(element.docmap["id"])) {
+                  element.docmap[Dbkeys.priorityIndex] =
+                      pinUserList.indexOf(element.docmap["id"]);
+                  element.docmap[Dbkeys.isPin] = true;
+                } else {
+                  element.docmap[Dbkeys.priorityIndex] =
+                      ((_userData.keys.length + 20) * 200);
+                  element.docmap[Dbkeys.isPin] = false;
+                }
                 _streamDocSnap.add(element.docmap);
               });
               broadcastList.forEach((element) {
+                element.docmap["key"] = element.docmap["id"];
+                if (pinUserList.contains(element.docmap["id"])) {
+                  element.docmap[Dbkeys.priorityIndex] =
+                      pinUserList.indexOf(element.docmap["id"]);
+                  element.docmap[Dbkeys.isPin] = true;
+                } else {
+                  element.docmap[Dbkeys.priorityIndex] =
+                      ((_userData.keys.length + 20) * 200);
+                  element.docmap[Dbkeys.isPin] = false;
+                }
                 _streamDocSnap.add(element.docmap);
               });
               _streamDocSnap.sort((a, b) {
@@ -340,6 +388,16 @@ class RecentChatsState extends State<RecentChats> {
                         ? b[Dbkeys.broadcastLATESTMESSAGETIME]
                         : _lastSpokenAt[b[Dbkeys.phone]] ?? 0;
                 return bTimestamp - aTimestamp;
+              });
+
+              List<Map<String, dynamic>> tempData = [];
+//               tempData.addAll(_streamDocSnap);
+              _streamDocSnap.sort((a, b) {
+                log(" aTimestamp  ==>  ${a} \n\n\n\n\n ${b} ");
+
+                int aTimestamp = a[Dbkeys.priorityIndex];
+                int bTimestamp = b[Dbkeys.priorityIndex];
+                return aTimestamp.compareTo(bTimestamp);
               });
 
               if (!showHidden) {
@@ -412,7 +470,9 @@ class RecentChatsState extends State<RecentChats> {
                                     if (_streamDocSnap[index].containsKey(
                                         Dbkeys.groupISTYPINGUSERID)) {
                                       ///----- Build Group Chat Tile ----
-                                      String groupKey = _streamDocSnap[index]["key"].toString();
+                                      String groupKey = _streamDocSnap[index]
+                                              ["key"]
+                                          .toString();
 
                                       return Theme(
                                           data: ThemeData(
@@ -425,59 +485,142 @@ class RecentChatsState extends State<RecentChats> {
                                                 contentPadding:
                                                     EdgeInsets.fromLTRB(
                                                         20, 0, 20, 0),
-                                                leading:
-                                                    Stack(
-                                                      alignment: Alignment.bottomRight,
-                                                      children: [
-                                                        customCircleAvatarGroup(
-                                                            url: _streamDocSnap[
-                                                                    index][
-                                                                Dbkeys
-                                                                    .groupPHOTOURL],
-                                                            radius: 22),
-                                                        if (_selectedUser.contains(groupKey))
-                                                          Container(
-                                                            padding: EdgeInsets.all(2),
-                                                            decoration: BoxDecoration(
-                                                              color: Colors.blue,
-                                                              shape: BoxShape.circle,
-                                                            ),
-                                                            child: Icon(
-                                                              Icons.check,
-                                                              color: Colors.white,
-                                                              size: 15,
-                                                            ),
-                                                          )
-                                                      ],
+                                                leading: Stack(
+                                                  alignment:
+                                                      Alignment.bottomRight,
+                                                  children: [
+                                                    customCircleAvatarGroup(
+                                                        url: _streamDocSnap[
+                                                                index][
+                                                            Dbkeys
+                                                                .groupPHOTOURL],
+                                                        radius: 22),
+                                                    if (selectedUser
+                                                        .contains(groupKey))
+                                                      Container(
+                                                        padding:
+                                                            EdgeInsets.all(2),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors.blue,
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                        child: Icon(
+                                                          Icons.check,
+                                                          color: Colors.white,
+                                                          size: 15,
+                                                        ),
+                                                      )
+                                                  ],
+                                                ),
+                                                title: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        _streamDocSnap[index]
+                                                            [Dbkeys.groupNAME],
+                                                        maxLines: 1,
+                                                        overflow:
+                                                            TextOverflow.ellipsis,
+                                                        style: TextStyle(
+                                                          color: fiberchatBlack,
+                                                          fontSize: 16,
+                                                        ),
+                                                      ),
                                                     ),
-                                                title: Text(
-                                                  _streamDocSnap[index]
-                                                      [Dbkeys.groupNAME],
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    color: fiberchatBlack,
-                                                    fontSize: 16,
-                                                  ),
+                                                    StreamBuilder(
+                                                      stream: FirebaseFirestore
+                                                          .instance
+                                                          .collection(DbPaths
+                                                          .collectiongroups)
+                                                          .doc(_streamDocSnap[index]
+                                                      [Dbkeys.groupID])
+                                                          .collection(DbPaths
+                                                          .collectiongroupChats)
+                                                          .where(
+                                                          Dbkeys.groupmsgTIME,
+                                                          isGreaterThan:
+                                                          _streamDocSnap[
+                                                          index][
+                                                          widget
+                                                              .currentUserNo])
+                                                          .snapshots(),
+                                                      builder:
+                                                          (BuildContext context,
+                                                          AsyncSnapshot<
+                                                              QuerySnapshot<
+                                                                  dynamic>>
+                                                          snapshot) {
+                                                        if (snapshot
+                                                            .connectionState ==
+                                                            ConnectionState
+                                                                .waiting) {
+                                                          return SizedBox(
+                                                            height: 0,
+                                                            width: 0,
+                                                          );
+                                                        } else if (snapshot
+                                                            .hasData &&
+                                                            snapshot.data!.docs
+                                                                .length >
+                                                                0) {
+                                                          return Container(
+                                                            child: Text(
+                                                                '${snapshot.data!.docs.length}',
+                                                                style: TextStyle(
+                                                                    fontSize: 14,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontWeight:
+                                                                    FontWeight
+                                                                        .bold)),
+                                                            padding:
+                                                            const EdgeInsets
+                                                                .all(7.0),
+                                                            decoration:
+                                                            new BoxDecoration(
+                                                              shape:
+                                                              BoxShape.circle,
+                                                              color:
+                                                              Colors.blue[400],
+                                                            ),
+                                                          );
+                                                        }
+                                                        return SizedBox(
+                                                          height: 0,
+                                                          width: 0,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ],
                                                 ),
-                                                subtitle: Text(
-                                                  '${_streamDocSnap[index][Dbkeys.groupMEMBERSLIST].length} ${getTranslated(context, 'participants')}',
-                                                  style: TextStyle(
-                                                    color: fiberchatGrey,
-                                                    fontSize: 14,
-                                                  ),
+                                                subtitle: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${_streamDocSnap[index][Dbkeys.groupMEMBERSLIST].length} ${getTranslated(context, 'participants')}',
+                                                        style: TextStyle(
+                                                          color: fiberchatGrey,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    if (_streamDocSnap[index][Dbkeys.isPin] ?? false)
+                                                      _chatPin(),
+                                                  ],
                                                 ),
-                                                onLongPress: (){
-                                                  _userSelectUnSelect(userKey: groupKey);
-                                                  setState(() {
-
-                                                  });
-                                                  widget.isPinUnPinBtnShow(_selectedUser.isNotEmpty);
+                                                onLongPress: () {
+                                                  _userSelectUnSelect(
+                                                      userKey: groupKey);
+                                                  setState(() {});
+                                                  widget.isPinUnPinBtnShow(
+                                                      selectedUser.isNotEmpty);
                                                 },
                                                 onTap: () {
-                                                  if(_selectedUser.isNotEmpty){
-                                                   _userSelectUnSelect(userKey: groupKey);
+                                                  if (selectedUser.isNotEmpty) {
+                                                    _userSelectUnSelect(
+                                                        userKey: groupKey);
                                                     return;
                                                   }
                                                   Navigator.push(
@@ -503,70 +646,6 @@ class RecentChatsState extends State<RecentChats> {
                                                                       [Dbkeys
                                                                           .groupID])));
                                                 },
-                                                trailing: StreamBuilder(
-                                                  stream: FirebaseFirestore
-                                                      .instance
-                                                      .collection(DbPaths
-                                                          .collectiongroups)
-                                                      .doc(_streamDocSnap[index]
-                                                          [Dbkeys.groupID])
-                                                      .collection(DbPaths
-                                                          .collectiongroupChats)
-                                                      .where(
-                                                          Dbkeys.groupmsgTIME,
-                                                          isGreaterThan:
-                                                              _streamDocSnap[
-                                                                      index][
-                                                                  widget
-                                                                      .currentUserNo])
-                                                      .snapshots(),
-                                                  builder:
-                                                      (BuildContext context,
-                                                          AsyncSnapshot<
-                                                                  QuerySnapshot<
-                                                                      dynamic>>
-                                                              snapshot) {
-                                                    if (snapshot
-                                                            .connectionState ==
-                                                        ConnectionState
-                                                            .waiting) {
-                                                      return SizedBox(
-                                                        height: 0,
-                                                        width: 0,
-                                                      );
-                                                    } else if (snapshot
-                                                            .hasData &&
-                                                        snapshot.data!.docs
-                                                                .length >
-                                                            0) {
-                                                      return Container(
-                                                        child: Text(
-                                                            '${snapshot.data!.docs.length}',
-                                                            style: TextStyle(
-                                                                fontSize: 14,
-                                                                color: Colors
-                                                                    .white,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(7.0),
-                                                        decoration:
-                                                            new BoxDecoration(
-                                                          shape:
-                                                              BoxShape.circle,
-                                                          color:
-                                                              Colors.blue[400],
-                                                        ),
-                                                      );
-                                                    }
-                                                    return SizedBox(
-                                                      height: 0,
-                                                      width: 0,
-                                                    );
-                                                  },
-                                                ),
                                               ),
                                               Divider(
                                                 height: 0,
@@ -663,43 +742,41 @@ class RecentChatsState extends State<RecentChats> {
                     ? 60
                     : 0),
             child: FloatingActionButton(
-                backgroundColor: fiberchatLightGreen,
-                child: Icon(
-                  Icons.chat,
-                  size: 30.0,
-                ),
-                onPressed: () {
-                  widget.isPinUnPinBtnShow(true);
-                  return;
-                  Navigator.push(
-                      context,
-                      new MaterialPageRoute(
-                          builder: (context) => new SmartContactsPage(
-                              onTapCreateGroup: () {
-                                if (observer.isAllowCreatingGroups == false) {
-                                  Fiberchat.showRationale(
-                                      getTranslated(this.context, 'disabled'));
-                                } else {
-                                  Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              AddContactsToGroup(
-                                                currentUserNo:
-                                                    widget.currentUserNo,
-                                                model: _cachedModel,
-                                                biometricEnabled: false,
-                                                prefs: widget.prefs,
-                                                isAddingWhileCreatingGroup:
-                                                    true,
-                                              )));
-                                }
-                              },
-                              prefs: widget.prefs,
-                              biometricEnabled: biometricEnabled,
-                              currentUserNo: currentUserNo!,
-                              model: _cachedModel!)));
-                }),
+              backgroundColor: fiberchatLightGreen,
+              child: Icon(
+                Icons.chat,
+                size: 30.0,
+              ),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                        builder: (context) => new SmartContactsPage(
+                            onTapCreateGroup: () {
+                              if (observer.isAllowCreatingGroups == false) {
+                                Fiberchat.showRationale(
+                                    getTranslated(this.context, 'disabled'));
+                              } else {
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            AddContactsToGroup(
+                                              currentUserNo:
+                                                  widget.currentUserNo,
+                                              model: _cachedModel,
+                                              biometricEnabled: false,
+                                              prefs: widget.prefs,
+                                              isAddingWhileCreatingGroup: true,
+                                            )));
+                              }
+                            },
+                            prefs: widget.prefs,
+                            biometricEnabled: biometricEnabled,
+                            currentUserNo: currentUserNo!,
+                            model: _cachedModel!)));
+              },
+            ),
           ),
           body: RefreshIndicator(
             onRefresh: () {
@@ -714,5 +791,14 @@ class RecentChatsState extends State<RecentChats> {
         );
       }),
     ));
+  }
+
+  Widget _chatPin(){
+    return Image.asset(
+      "assets/images/chatPin.png",
+      width: 15,
+      height: 15,
+      color: Colors.grey,
+    );
   }
 }

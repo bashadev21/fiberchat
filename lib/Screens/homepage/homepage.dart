@@ -23,6 +23,7 @@ import 'package:fiberchat/Services/Providers/AvailableContactsProvider.dart';
 import 'package:fiberchat/Services/Providers/Observer.dart';
 import 'package:fiberchat/Services/Providers/StatusProvider.dart';
 import 'package:fiberchat/Services/Providers/call_history_provider.dart';
+import 'package:fiberchat/Utils/app_constants.dart';
 import 'package:fiberchat/Utils/phonenumberVariantsGenerator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
@@ -57,6 +58,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fiberchat/Configs/Enum.dart';
 import 'package:fiberchat/Utils/unawaited.dart';
+
+List<String> selectedUser = [];
+List<String> pinUserList = [];
 
 // ignore: must_be_immutable
 class Homepage extends StatefulWidget {
@@ -162,7 +166,6 @@ class HomepageState extends State<Homepage>
     getSignedInUserOrRedirect();
     setdeviceinfo();
     registerNotification();
-
     controllerIfcallallowed = TabController(length: 4, vsync: this);
     controllerIfcallallowed!.index = 1;
     controllerIfcallNotallowed = TabController(length: 3, vsync: this);
@@ -176,6 +179,7 @@ class HomepageState extends State<Homepage>
     });
     getModel();
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      setPinChatList();
       controllerIfcallallowed!.addListener(() {
         if (controllerIfcallallowed!.index == 2) {
           final statusProvider =
@@ -197,6 +201,14 @@ class HomepageState extends State<Homepage>
         }
       });
     });
+  }
+
+  void setPinChatList() {
+    List<String>? userData = sharedPreferences.getStringList(Dbkeys.pinChat);
+    if (userData != null) {
+      pinUserList = userData;
+      setState(() {});
+    }
   }
 
   // detectLocale() async {
@@ -1147,7 +1159,7 @@ class HomepageState extends State<Homepage>
             });
           }
         },
-        currentUserNo: currentUserNo!,
+        currentUserNo: "$currentUserNo",
         biometricEnabled: biometricEnabled,
         type: Fiberchat.getAuthenticationType(biometricEnabled, _cachedModel),
       )
@@ -1162,12 +1174,14 @@ class HomepageState extends State<Homepage>
           currentUserNo: widget.currentUserNo,
           isSecuritySetupDone: widget.isSecuritySetupDone),
       RecentChats(
-          prefs: widget.prefs,
-          currentUserNo: widget.currentUserNo,
-          isSecuritySetupDone: widget.isSecuritySetupDone,  isPinUnPinBtnShow: (va) {
-        _isShowPinUnpinBtn = va;
-        setState(() {});
-      },),
+        prefs: widget.prefs,
+        currentUserNo: widget.currentUserNo,
+        isSecuritySetupDone: widget.isSecuritySetupDone,
+        isPinUnPinBtnShow: (va) {
+          _isShowPinUnpinBtn = va;
+          setState(() {});
+        },
+      ),
       Status(
           currentUserFullname: userFullname,
           currentUserPhotourl: userPhotourl,
@@ -1230,7 +1244,46 @@ class HomepageState extends State<Homepage>
                             // ),
                             titleSpacing: -5,
                             actions: <Widget>[
-                              if (_isShowPinUnpinBtn) Icon(Icons.pin),
+                              if (_isShowPinUnpinBtn)...[
+                              InkWell(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 3),
+                                  child: Image.asset(AppImages.chatPin,width: 20,height: 20,
+                                    color: Colors.white,),
+                                ),
+                                onTap: () async {
+                                  selectedUser.forEach((element) {
+                                    if (!pinUserList.contains(element)) {
+                                      pinUserList.insert(0, element);
+                                    }
+                                  });
+                                  await sharedPreferences.setStringList(
+                                      Dbkeys.pinChat, pinUserList);
+                                  selectedUser.clear();
+                                  _isShowPinUnpinBtn = false;
+                                  setState(() {});
+                                },
+                              ),
+                              InkWell(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 3),
+                                  child: Image.asset(AppImages.chatUnPin,width: 38,height: 38,
+                                    color: Colors.white,),
+                                ),
+                                onTap: () async {
+                                  selectedUser.forEach((element) {
+                                    if (pinUserList.contains(element)) {
+                                      pinUserList.remove(element);
+                                    }
+                                  });
+                                  await sharedPreferences.setStringList(
+                                      Dbkeys.pinChat, pinUserList);
+                                  selectedUser.clear();
+                                  _isShowPinUnpinBtn = false;
+                                  setState(() {});
+                                },
+                              ),
+                              ],
                               PopupMenuButton(
                                   padding: EdgeInsets.all(0),
                                   icon: Padding(

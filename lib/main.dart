@@ -29,7 +29,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Screens/new_auth_screens/mainview.dart';
-
+late SharedPreferences sharedPreferences;
 void main() async {
   if (DESIGN_TYPE == Themetype.messenger) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -39,6 +39,7 @@ void main() async {
   }
 
   WidgetsFlutterBinding.ensureInitialized();
+  sharedPreferences = await SharedPreferences.getInstance();
   if (IsBannerAdShow == true ||
       IsInterstitialAdShow == true ||
       IsVideoAdShow == true) {

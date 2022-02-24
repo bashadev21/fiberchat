@@ -2,11 +2,12 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
-import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fiberchat/Configs/optional_constants.dart';
+import 'package:fiberchat/Screens/chat_screen/Widget/location_pick_screen.dart';
 import 'package:fiberchat/Screens/chat_screen/utils/uploadMediaWithProgress.dart';
 import 'package:fiberchat/Screens/contact_screens/SelectContactsToForward.dart';
 import 'package:fiberchat/Screens/security_screens/security.dart';
@@ -55,6 +56,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:giphy_get/giphy_get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -62,7 +64,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:media_info/media_info.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -81,6 +83,9 @@ import 'package:fiberchat/Configs/Enum.dart';
 hidekeyboard(BuildContext context) {
   FocusScope.of(context).requestFocus(FocusNode());
 }
+
+List<Map<String, dynamic>> selectedMessageDocs = new List.from(
+    <Map<String, dynamic>>[]);
 
 class ChatScreen extends StatefulWidget {
   final String? peerNo, currentUserNo;
@@ -131,9 +136,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   int tempSendIndex = 0;
   String? imageUrl;
   SeenState? seenState;
-  List<Message> messages = new List.from(<Message>[]);
-  List<Map<String, dynamic>> _savedMessageDocs =
-  new List.from(<Map<String, dynamic>>[]);
+  List<Map<String, dynamic>> _messageList = new List.from(
+      <Map<String, dynamic>>[]);
+
+  // List<Map<String, dynamic>> _savedMessageDocs =
+  // new List.from(<Map<String, dynamic>>[]);
 
   int? uploadTimestamp;
 
@@ -187,6 +194,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    selectedMessageDocs.clear();
     _cachedModel = widget.model;
     peerNo = widget.peerNo;
     currentUserNo = widget.currentUserNo;
@@ -209,7 +217,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       isLoading = false;
       imageUrl = '';
       listenToBlock();
-      loadSavedMessages();
+      // // loadSavedMessages();
       readLocal(this.context);
       Future.delayed(const Duration(milliseconds: 3000), () {
         if (IsVideoAdShow == true && observer.isadmobshow == true) {
@@ -796,6 +804,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       int? timestamp,
       {bool isForward = false}) async {
     final observer = Provider.of<Observer>(this.context, listen: false);
+    log("message  ==>   ${currentUser}");
     if (content.trim() != '') {
       try {
         content = content.trim();
@@ -820,6 +829,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             Dbkeys.sendername: _cachedModel.currentUser![Dbkeys.nickname],
             Dbkeys.isReply: isReplyKeyboard,
             Dbkeys.replyToMsgDoc: replyDoc,
+            Dbkeys.userStarList: [],
             Dbkeys.isForward: isForward
           }, SetOptions(merge: true));
 
@@ -835,65 +845,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             Dbkeys.sendername: _cachedModel.currentUser![Dbkeys.nickname],
             Dbkeys.isReply: isReplyKeyboard,
             Dbkeys.replyToMsgDoc: replyDoc,
+            Dbkeys.userStarList: [],
             Dbkeys.isForward: isForward
           };
 
+          //changes1
           setStateIfMounted(() {
             isReplyKeyboard = false;
             replyDoc = null;
-            messages = List.from(messages)
-              ..add(Message(
-                buildTempMessage(
-                    context, type, content, timestamp, messaging, tempDoc),
-                onTap: (tempDoc[Dbkeys.from] == widget.currentUserNo &&
-                    tempDoc[Dbkeys.hasSenderDeleted] == true) ==
-                    true
-                    ? () {}
-                    : type == MessageType.image
-                    ? () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            PhotoViewWrapper(
-                              message: content,
-                              tag: timestamp.toString(),
-                              imageProvider:
-                              CachedNetworkImageProvider(content),
-                            ),
-                      ));
-                }
-                    : null,
-                onDismiss: tempDoc[Dbkeys.content] == '' ||
-                    tempDoc[Dbkeys.content] == null
-                    ? () {}
-                    : () {
-                  setStateIfMounted(() {
-                    isReplyKeyboard = true;
-                    replyDoc = tempDoc;
-                  });
-                  HapticFeedback.heavyImpact();
-                  keyboardFocusNode.requestFocus();
-                },
-                onDoubleTap: () {
-                  // save(tempDoc);
-                },
-                onLongPress: () {
-                  if (tempDoc.containsKey(Dbkeys.hasRecipientDeleted) &&
-                      tempDoc.containsKey(Dbkeys.hasSenderDeleted)) {
-                    if ((tempDoc[Dbkeys.from] == widget.currentUserNo &&
-                        tempDoc[Dbkeys.hasSenderDeleted] == true) ==
-                        false) {
-                      //--Show Menu only if message is not deleted by current user already
-                      contextMenuNew(this.context, tempDoc, true);
-                    }
-                  } else {
-                    contextMenuOld(context, tempDoc);
-                  }
-                },
-                from: currentUserNo,
-                timestamp: timestamp,
-              ));
+            _messageList.add(tempDoc);
           });
 
           unawaited(realtime.animateTo(0.0,
@@ -934,40 +894,21 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   delete(int? ts) {
     setStateIfMounted(() {
-      messages.removeWhere((msg) => msg.timestamp == ts);
-      messages = List.from(messages);
+      //changes1
+      _messageList.removeWhere((msg) => msg[Dbkeys.timestamp] == ts);
+      selectedMessageDocs.removeWhere((msg) => msg[Dbkeys.timestamp] == ts);
+      // messages = List.from(messages);
     });
   }
 
   updateDeleteBySenderField(int? ts, updateDoc, context) {
     setStateIfMounted(() {
-      int i = messages.indexWhere((msg) => msg.timestamp == ts);
-      var child = buildTempMessage(
-          context,
-          MessageType.text,
-          updateDoc[Dbkeys.content],
-          updateDoc[Dbkeys.timestamp],
-          true,
-          updateDoc);
-      var timestamp = messages[i].timestamp;
-      var from = messages[i].from;
-      // var onTap = messages[i].onTap;
-      var onDoubleTap = messages[i].onDoubleTap;
-      var onDismiss = messages[i].onDismiss;
-      var onLongPress = () {};
+      int i = _messageList.indexWhere((msg) => msg[Dbkeys.timestamp] == ts);
       if (i >= 0) {
-        messages.removeWhere((msg) => msg.timestamp == ts);
-        messages.insert(
-            i,
-            Message(child,
-                timestamp: timestamp,
-                from: from,
-                onTap: () {},
-                onDoubleTap: onDoubleTap,
-                onDismiss: onDismiss,
-                onLongPress: onLongPress));
+        _messageList.removeWhere((msg) => msg[Dbkeys.timestamp] == ts);
+        selectedMessageDocs.removeWhere((msg) => msg[Dbkeys.timestamp] == ts);
+        _messageList.insert(i, updateDoc);
       }
-      messages = List.from(messages);
     });
   }
 
@@ -983,11 +924,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
         onTap: () async {
           Save.deleteMessage(peerNo, doc);
-          _savedMessageDocs.removeWhere(
-                  (msg) => msg[Dbkeys.timestamp] == doc[Dbkeys.timestamp]);
-          setStateIfMounted(() {
-            _savedMessageDocs = List.from(_savedMessageDocs);
-          });
+          // _savedMessageDocs.removeWhere(
+          //         (msg) => msg[Dbkeys.timestamp] == doc[Dbkeys.timestamp]);
+          // setStateIfMounted(() {
+          //   _savedMessageDocs = List.from(_savedMessageDocs);
+          // });
           Navigator.pop(context);
         }));
     showDialog(
@@ -997,14 +938,651 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         });
   }
 
+  Future<void> _msgStarRated() async {
+    selectedMessageDocs.forEach((mssgDoc) {
+      List<dynamic> phoneList = mssgDoc[Dbkeys.userStarList];
+      if (!phoneList.contains(currentUser![Dbkeys.phone])) {
+        phoneList.add(currentUser![Dbkeys.phone]);
+      }
+      mssgDoc[Dbkeys.userStarList] = phoneList;
+    });
+    List<Map<String, dynamic>> tempList = List.from(selectedMessageDocs);
+    selectedMessageDocs.clear();
+    setState(() {});
+    for (int i = 0; i < tempList.length; i++) {
+      Map<String, dynamic> mssgDoc = tempList[i];
+      await FirebaseFirestore.instance
+          .collection(DbPaths.collectionmessages)
+          .doc(chatId)
+          .collection(chatId!)
+          .doc('${mssgDoc[Dbkeys.timestamp]}')
+          .get()
+          .then((chatDoc) async {
+        if (!chatDoc.exists) {
+          Fiberchat.toast('Please reload this screen !');
+        }
+        else if (chatDoc.exists) {
+          Map<String, dynamic> realtimeDoc = chatDoc.data()!;
+          Map<String, dynamic> _tempDoc = Map.from(mssgDoc);
+          _tempDoc[Dbkeys.content] =
+              encryptWithCRC(_tempDoc[Dbkeys.content]);
+          setState(() {});
+          await FirebaseFirestore.instance
+              .collection(DbPaths.collectionmessages)
+              .doc(chatId)
+              .collection(chatId!)
+              .doc('${realtimeDoc[Dbkeys.timestamp]}')
+              .set(_tempDoc);
+        }
+      });
+    }
+  }
+
+  Future<void> _msgUnStarRated() async {
+    selectedMessageDocs.forEach((mssgDoc) {
+      List<dynamic> phoneList = mssgDoc[Dbkeys.userStarList];
+      if (phoneList.contains(currentUser![Dbkeys.phone])) {
+        phoneList.remove(currentUser![Dbkeys.phone]);
+      }
+      mssgDoc[Dbkeys.userStarList] = phoneList;
+    });
+    List<Map<String, dynamic>> tempList = List.from(selectedMessageDocs);
+    selectedMessageDocs.clear();
+    setState(() {});
+    for (int i = 0; i < tempList.length; i++) {
+      Map<String, dynamic> mssgDoc = tempList[i];
+      await FirebaseFirestore.instance
+          .collection(DbPaths.collectionmessages)
+          .doc(chatId)
+          .collection(chatId!)
+          .doc('${mssgDoc[Dbkeys.timestamp]}')
+          .get()
+          .then((chatDoc) async {
+        if (!chatDoc.exists) {
+          Fiberchat.toast('Please reload this screen !');
+        }
+        else if (chatDoc.exists) {
+          Map<String, dynamic> realtimeDoc = chatDoc.data()!;
+          Map<String, dynamic> _tempDoc = Map.from(mssgDoc);
+          _tempDoc[Dbkeys.content] =
+              encryptWithCRC(_tempDoc[Dbkeys.content]);
+          setState(() {});
+          await FirebaseFirestore.instance
+              .collection(DbPaths.collectionmessages)
+              .doc(chatId)
+              .collection(chatId!)
+              .doc('${realtimeDoc[Dbkeys.timestamp]}')
+              .set(_tempDoc);
+        }
+      });
+    }
+  }
+
   //-- New context menu with Delete for Me & Delete For Everyone feature
-  contextMenuNew(contextForDialog, Map<String, dynamic> mssgDoc, bool isTemp,
-      {bool saved = false}) {
+  void _showDeleteDialog() {
     List<Widget> tiles = List.from(<Widget>[]);
-    //####################----------------------- Delete Msgs for SENDER ---------------------------------------------------
+    int _countUserFrom = 0;
+    int _countUserTo = 0;
+    int _countHasSenderDeleted = 0;
+    int _countHasRecipientDeleted = 0;
+    selectedMessageDocs.forEach((element) {
+      if (element[Dbkeys.to] == currentUserNo) {
+        _countUserTo++;
+      }
+      if (element[Dbkeys.from] == currentUserNo) {
+        _countUserFrom++;
+      }
+      if (element[Dbkeys.hasSenderDeleted] == false) {
+        _countHasSenderDeleted++;
+      }
+      if (element[Dbkeys.hasRecipientDeleted] == false) {
+        _countHasRecipientDeleted++;
+      }
+    });
+
+    if (_countUserFrom == selectedMessageDocs.length &&
+        _countHasSenderDeleted == selectedMessageDocs.length) {
+      tiles.add(ListTile(
+          dense: true,
+          leading: Icon(Icons.delete_outline),
+          title: Text(
+            getTranslated(context, 'dltforme'),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          onTap: () async {
+            Fiberchat.toast(getTranslated(context, 'deleting'));
+            List<Map<String, dynamic>> _tempList = List.from(
+                selectedMessageDocs);
+            for (int i = 0; i < _tempList.length; i++) {
+              Map<String, dynamic> mssgDoc = _tempList[i];
+              await FirebaseFirestore.instance
+                  .collection(DbPaths.collectionmessages)
+                  .doc(chatId)
+                  .collection(chatId!)
+                  .doc('${mssgDoc[Dbkeys.timestamp]}')
+                  .get()
+                  .then((chatDoc) async {
+                if (!chatDoc.exists) {
+                  Fiberchat.toast('Please reload this screen !');
+                }
+                else if (chatDoc.exists) {
+                  Map<String, dynamic> realtimeDoc = chatDoc.data()!;
+                  if (realtimeDoc[Dbkeys.hasRecipientDeleted] == true) {
+                    if ((mssgDoc.containsKey(Dbkeys.isbroadcast) == true
+                        ? mssgDoc[Dbkeys.isbroadcast]
+                        : false) ==
+                        true) {
+                      // -------Delete broadcast message completely as recipient has already deleted
+                      await FirebaseFirestore.instance
+                          .collection(DbPaths.collectionmessages)
+                          .doc(chatId)
+                          .collection(chatId!)
+                          .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                          .delete();
+                      delete(realtimeDoc[Dbkeys.timestamp]);
+                      Save.deleteMessage(peerNo, realtimeDoc);
+                      // _savedMessageDocs.removeWhere((msg) =>
+                      // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                      // setStateIfMounted(() {
+                      //   _savedMessageDocs = List.from(_savedMessageDocs);
+                      // });
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        Navigator.maybePop(
+                          context,
+                        );
+                        Fiberchat.toast(
+                          getTranslated(context, 'deleted'),
+                        );
+                        hidekeyboard(
+                          context,
+                        );
+                      });
+                    } else {
+                      // -------Delete message completely as recipient has already deleted
+                      await deleteMsgMedia(realtimeDoc, chatId!)
+                          .then((isDeleted) async {
+                        if (isDeleted == false || isDeleted == null) {
+                          Fiberchat.toast(
+                              'Could not delete. Please try again!');
+                        } else {
+                          await FirebaseFirestore.instance
+                              .collection(DbPaths.collectionmessages)
+                              .doc(chatId)
+                              .collection(chatId!)
+                              .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                              .delete();
+                          delete(realtimeDoc[Dbkeys.timestamp]);
+                          // Save.deleteMessage(peerNo, realtimeDoc);
+                          // _savedMessageDocs.removeWhere((msg) =>
+                          // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                          // setStateIfMounted(() {
+                          //   _savedMessageDocs = List.from(_savedMessageDocs);
+                          // });
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            Navigator.maybePop(
+                              context,
+                            );
+                            Fiberchat.toast(
+                              getTranslated(context, 'deleted'),
+                            );
+                            hidekeyboard(context);
+                          });
+                        }
+                      });
+                    }
+                  }
+                  else {
+                    //----Don't Delete Media from server, as recipient has not deleted the message from thier message list-----
+                    FirebaseFirestore.instance
+                        .collection(DbPaths.collectionmessages)
+                        .doc(chatId)
+                        .collection(chatId!)
+                        .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                        .set({Dbkeys.hasSenderDeleted: true},
+                        SetOptions(merge: true));
+
+                    // Save.deleteMessage(peerNo, mssgDoc);
+                    // _savedMessageDocs.removeWhere((msg) =>
+                    // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                    // setStateIfMounted(() {
+                    //   _savedMessageDocs = List.from(_savedMessageDocs);
+                    // });
+
+                    Map<String, dynamic> tempDoc = realtimeDoc;
+                    setStateIfMounted(() {
+                      tempDoc[Dbkeys.hasSenderDeleted] = true;
+                    });
+                    updateDeleteBySenderField(
+                        realtimeDoc[Dbkeys.timestamp], tempDoc, context);
+
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      Navigator.maybePop(context);
+                      Fiberchat.toast(
+                        getTranslated(context, 'deleted'),
+                      );
+                      hidekeyboard(context);
+                    });
+                  }
+                }
+              });
+            }
+          }));
+      tiles.add(ListTile(
+          dense: true,
+          leading: Icon(Icons.delete),
+          title: Text(
+            getTranslated(context, 'dltforeveryone'),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          onTap: () async {
+            List<Map<String, dynamic>> _tempList = List.from(
+                selectedMessageDocs);
+            for (int i = 0; i < _tempList.length; i++) {
+              Map<String, dynamic> mssgDoc = _tempList[i];
+              if ((mssgDoc.containsKey(Dbkeys.isbroadcast) == true
+                  ? mssgDoc[Dbkeys.isbroadcast]
+                  : false) ==
+                  true) {
+                // -------Delete broadcast message completely for everyone
+                await FirebaseFirestore.instance
+                    .collection(DbPaths.collectionmessages)
+                    .doc(chatId)
+                    .collection(chatId!)
+                    .doc('${mssgDoc[Dbkeys.timestamp]}')
+                    .delete();
+                delete(mssgDoc[Dbkeys.timestamp]);
+                Save.deleteMessage(peerNo, mssgDoc);
+                // _savedMessageDocs.removeWhere(
+                //         (msg) =>
+                //     msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                // setStateIfMounted(() {
+                //   _savedMessageDocs = List.from(_savedMessageDocs);
+                // });
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  Navigator.maybePop(context);
+                  Fiberchat.toast(
+                    getTranslated(context, 'deleted'),
+                  );
+                  hidekeyboard(context);
+                });
+              } else {
+                // -------Delete message completely for everyone
+                Fiberchat.toast(
+                  getTranslated(context, 'deleting'),
+                );
+                await deleteMsgMedia(mssgDoc, chatId!).then((isDeleted) async {
+                  if (isDeleted == false || isDeleted == null) {
+                    Fiberchat.toast('Could not delete. Please try again!');
+                  } else {
+                    await FirebaseFirestore.instance
+                        .collection(DbPaths.collectionmessages)
+                        .doc(chatId)
+                        .collection(chatId!)
+                        .doc('${mssgDoc[Dbkeys.timestamp]}')
+                        .delete();
+                    delete(mssgDoc[Dbkeys.timestamp]);
+                    // Save.deleteMessage(peerNo, mssgDoc);
+                    // _savedMessageDocs.removeWhere((msg) =>
+                    // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                    // setStateIfMounted(() {
+                    //   _savedMessageDocs = List.from(_savedMessageDocs);
+                    // });
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      Navigator.maybePop(context);
+                      Fiberchat.toast(
+                        getTranslated(context, 'deleted'),
+                      );
+                      hidekeyboard(context);
+                    });
+                  }
+                });
+              }
+            }
+          }));
+    } else if ((_countUserTo == selectedMessageDocs.length &&
+        _countHasRecipientDeleted == selectedMessageDocs.length)) {
+      tiles.add(ListTile(
+          dense: true,
+          leading: Icon(Icons.delete_outline),
+          title: Text(
+            getTranslated(context, 'dltforme'),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          onTap: () async {
+            Fiberchat.toast(
+              getTranslated(context, 'deleting'),
+            );
+            List<Map<String, dynamic>> tempList = List.from(
+                selectedMessageDocs);
+            for (int i = 0; i < tempList.length; i++) {
+              Map<String, dynamic> mssgDoc = tempList[i];
+              await FirebaseFirestore.instance
+                  .collection(DbPaths.collectionmessages)
+                  .doc(chatId)
+                  .collection(chatId!)
+                  .doc('${mssgDoc[Dbkeys.timestamp]}')
+                  .get()
+                  .then((chatDoc) async {
+                if (!chatDoc.exists) {
+                  Fiberchat.toast('Please reload this screen !');
+                } else if (chatDoc.exists) {
+                  Map<String, dynamic> realtimeDoc = chatDoc.data()!;
+                  if (realtimeDoc[Dbkeys.hasSenderDeleted] == true) {
+                    if ((mssgDoc.containsKey(Dbkeys.isbroadcast) == true
+                        ? mssgDoc[Dbkeys.isbroadcast]
+                        : false) ==
+                        true) {
+                      // ------- Delete broadcast message completely as sender has already deleted
+                      await FirebaseFirestore.instance
+                          .collection(DbPaths.collectionmessages)
+                          .doc(chatId)
+                          .collection(chatId!)
+                          .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                          .delete();
+                      delete(realtimeDoc[Dbkeys.timestamp]);
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        Navigator.maybePop(context);
+                        Fiberchat.toast(
+                          getTranslated(context, 'deleted'),
+                        );
+                        hidekeyboard(context);
+                      });
+                    } else {
+                      // -------Delete message completely as sender has already deleted
+                      await deleteMsgMedia(realtimeDoc, chatId!)
+                          .then((isDeleted) async {
+                        if (isDeleted == false || isDeleted == null) {
+                          Fiberchat.toast(
+                              'Could not delete. Please try again!');
+                        } else {
+                          await FirebaseFirestore.instance
+                              .collection(DbPaths.collectionmessages)
+                              .doc(chatId)
+                              .collection(chatId!)
+                              .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                              .delete();
+                          delete(realtimeDoc[Dbkeys.timestamp]);
+                          Save.deleteMessage(peerNo, realtimeDoc);
+
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            Navigator.maybePop(context);
+                            Fiberchat.toast(
+                              getTranslated(context, 'deleted'),
+                            );
+                            hidekeyboard(context);
+                          });
+                        }
+                      });
+                    }
+                  }
+                  else {
+                    //----Don't Delete Media from server, as recipient has not deleted the message from thier message list-----
+                    FirebaseFirestore.instance
+                        .collection(DbPaths.collectionmessages)
+                        .doc(chatId)
+                        .collection(chatId!)
+                        .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                        .set({Dbkeys.hasRecipientDeleted: true},
+                        SetOptions(merge: true));
+
+                    Save.deleteMessage(peerNo, mssgDoc);
+
+                    // if (isTemp == true) {
+                    //   Map<String, dynamic> tempDoc = realtimeDoc;
+                    //   setStateIfMounted(() {
+                    //     tempDoc[Dbkeys.hasRecipientDeleted] = true;
+                    //   });
+                    //   updateDeleteBySenderField(realtimeDoc[Dbkeys.timestamp],
+                    //       tempDoc, contextForDialog);
+                    // }
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      Navigator.maybePop(context);
+                      Fiberchat.toast(
+                        getTranslated(context, 'deleted'),
+                      );
+                      hidekeyboard(context);
+                    });
+                  }
+                }
+              });
+            }
+          }));
+    } else {
+      tiles.add(ListTile(
+          dense: true,
+          leading: Icon(Icons.delete_outline),
+          title: Text(
+            getTranslated(context, 'dltforme'),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          onTap: () async {
+            Fiberchat.toast(
+              getTranslated(context, 'deleting'),
+            );
+            List<Map<String, dynamic>> tempList = List.from(
+                selectedMessageDocs);
+            for (int i = 0; i < tempList.length; i++) {
+              Map<String, dynamic> mssgDoc = tempList[i];
+              if (mssgDoc[Dbkeys.from] == currentUserNo) {
+                await FirebaseFirestore.instance
+                    .collection(DbPaths.collectionmessages)
+                    .doc(chatId)
+                    .collection(chatId!)
+                    .doc('${mssgDoc[Dbkeys.timestamp]}')
+                    .get()
+                    .then((chatDoc) async {
+                  if (!chatDoc.exists) {
+                    Fiberchat.toast('Please reload this screen !');
+                  }
+                  else if (chatDoc.exists) {
+                    Map<String, dynamic> realtimeDoc = chatDoc.data()!;
+                    if (realtimeDoc[Dbkeys.hasRecipientDeleted] == true) {
+                      if ((mssgDoc.containsKey(Dbkeys.isbroadcast) == true
+                          ? mssgDoc[Dbkeys.isbroadcast]
+                          : false) ==
+                          true) {
+                        // -------Delete broadcast message completely as recipient has already deleted
+                        await FirebaseFirestore.instance
+                            .collection(DbPaths.collectionmessages)
+                            .doc(chatId)
+                            .collection(chatId!)
+                            .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                            .delete();
+                        delete(realtimeDoc[Dbkeys.timestamp]);
+                        Save.deleteMessage(peerNo, realtimeDoc);
+                        // _savedMessageDocs.removeWhere((msg) =>
+                        // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                        // setStateIfMounted(() {
+                        //   _savedMessageDocs = List.from(_savedMessageDocs);
+                        // });
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          Navigator.maybePop(
+                            context,
+                          );
+                          Fiberchat.toast(
+                            getTranslated(context, 'deleted'),
+                          );
+                          hidekeyboard(
+                            context,
+                          );
+                        });
+                      } else {
+                        // -------Delete message completely as recipient has already deleted
+                        await deleteMsgMedia(realtimeDoc, chatId!)
+                            .then((isDeleted) async {
+                          if (isDeleted == false || isDeleted == null) {
+                            Fiberchat.toast(
+                                'Could not delete. Please try again!');
+                          } else {
+                            await FirebaseFirestore.instance
+                                .collection(DbPaths.collectionmessages)
+                                .doc(chatId)
+                                .collection(chatId!)
+                                .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                                .delete();
+                            delete(realtimeDoc[Dbkeys.timestamp]);
+                            // Save.deleteMessage(peerNo, realtimeDoc);
+                            // _savedMessageDocs.removeWhere((msg) =>
+                            // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                            // setStateIfMounted(() {
+                            //   _savedMessageDocs = List.from(_savedMessageDocs);
+                            // });
+                            Future.delayed(
+                                const Duration(milliseconds: 300), () {
+                              Navigator.maybePop(
+                                context,
+                              );
+                              Fiberchat.toast(
+                                getTranslated(context, 'deleted'),
+                              );
+                              hidekeyboard(context);
+                            });
+                          }
+                        });
+                      }
+                    }
+                    else {
+                      //----Don't Delete Media from server, as recipient has not deleted the message from thier message list-----
+                      FirebaseFirestore.instance
+                          .collection(DbPaths.collectionmessages)
+                          .doc(chatId)
+                          .collection(chatId!)
+                          .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                          .set({Dbkeys.hasSenderDeleted: true},
+                          SetOptions(merge: true));
+
+                      // Save.deleteMessage(peerNo, mssgDoc);
+                      // _savedMessageDocs.removeWhere((msg) =>
+                      // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                      // setStateIfMounted(() {
+                      //   _savedMessageDocs = List.from(_savedMessageDocs);
+                      // });
+
+                      Map<String, dynamic> tempDoc = realtimeDoc;
+                      setStateIfMounted(() {
+                        tempDoc[Dbkeys.hasSenderDeleted] = true;
+                      });
+                      updateDeleteBySenderField(
+                          realtimeDoc[Dbkeys.timestamp], tempDoc, context);
+
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        Navigator.maybePop(context);
+                        Fiberchat.toast(
+                          getTranslated(context, 'deleted'),
+                        );
+                        hidekeyboard(context);
+                      });
+                    }
+                  }
+                });
+              } else {
+                await FirebaseFirestore.instance
+                    .collection(DbPaths.collectionmessages)
+                    .doc(chatId)
+                    .collection(chatId!)
+                    .doc('${mssgDoc[Dbkeys.timestamp]}')
+                    .get()
+                    .then((chatDoc) async {
+                  if (!chatDoc.exists) {
+                    Fiberchat.toast('Please reload this screen !');
+                  } else if (chatDoc.exists) {
+                    Map<String, dynamic> realtimeDoc = chatDoc.data()!;
+                    if (realtimeDoc[Dbkeys.hasSenderDeleted] == true) {
+                      if ((mssgDoc.containsKey(Dbkeys.isbroadcast) == true
+                          ? mssgDoc[Dbkeys.isbroadcast]
+                          : false) ==
+                          true) {
+                        // ------- Delete broadcast message completely as sender has already deleted
+                        await FirebaseFirestore.instance
+                            .collection(DbPaths.collectionmessages)
+                            .doc(chatId)
+                            .collection(chatId!)
+                            .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                            .delete();
+                        delete(realtimeDoc[Dbkeys.timestamp]);
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          Navigator.maybePop(context);
+                          Fiberchat.toast(
+                            getTranslated(context, 'deleted'),
+                          );
+                          hidekeyboard(context);
+                        });
+                      } else {
+                        // -------Delete message completely as sender has already deleted
+                        await deleteMsgMedia(realtimeDoc, chatId!)
+                            .then((isDeleted) async {
+                          if (isDeleted == false || isDeleted == null) {
+                            Fiberchat.toast(
+                                'Could not delete. Please try again!');
+                          } else {
+                            await FirebaseFirestore.instance
+                                .collection(DbPaths.collectionmessages)
+                                .doc(chatId)
+                                .collection(chatId!)
+                                .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                                .delete();
+                            delete(realtimeDoc[Dbkeys.timestamp]);
+                            Save.deleteMessage(peerNo, realtimeDoc);
+
+                            Future.delayed(
+                                const Duration(milliseconds: 300), () {
+                              Navigator.maybePop(context);
+                              Fiberchat.toast(
+                                getTranslated(context, 'deleted'),
+                              );
+                              hidekeyboard(context);
+                            });
+                          }
+                        });
+                      }
+                    }
+                    else {
+                      //----Don't Delete Media from server, as recipient has not deleted the message from thier message list-----
+                      FirebaseFirestore.instance
+                          .collection(DbPaths.collectionmessages)
+                          .doc(chatId)
+                          .collection(chatId!)
+                          .doc('${realtimeDoc[Dbkeys.timestamp]}')
+                          .set({Dbkeys.hasRecipientDeleted: true},
+                          SetOptions(merge: true));
+
+                      Save.deleteMessage(peerNo, mssgDoc);
+
+                      // if (isTemp == true) {
+                      //   Map<String, dynamic> tempDoc = realtimeDoc;
+                      //   setStateIfMounted(() {
+                      //     tempDoc[Dbkeys.hasRecipientDeleted] = true;
+                      //   });
+                      //   updateDeleteBySenderField(realtimeDoc[Dbkeys.timestamp],
+                      //       tempDoc, contextForDialog);
+                      // }
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        Navigator.maybePop(context);
+                        Fiberchat.toast(
+                          getTranslated(context, 'deleted'),
+                        );
+                        hidekeyboard(context);
+                      });
+                    }
+                  }
+                });
+              }
+            }
+          }));
+    }
+    showDialog(
+        context: context,
+        builder: (contextForDialog) {
+          return SimpleDialog(children: tiles);
+        });
+  }
+
+  contextMenuNew(contextForDialog, Map<String, dynamic> mssgDoc) {
+    hidekeyboard(contextForDialog);
+    List<Widget> tiles = List.from(<Widget>[]);
+
     if ((mssgDoc[Dbkeys.from] == currentUserNo &&
-        mssgDoc[Dbkeys.hasSenderDeleted] == false) &&
-        saved == false) {
+        mssgDoc[Dbkeys.hasSenderDeleted] == false)) {
       tiles.add(ListTile(
           dense: true,
           leading: Icon(Icons.delete_outline),
@@ -1039,11 +1617,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         .delete();
                     delete(realtimeDoc[Dbkeys.timestamp]);
                     Save.deleteMessage(peerNo, realtimeDoc);
-                    _savedMessageDocs.removeWhere((msg) =>
-                    msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
-                    setStateIfMounted(() {
-                      _savedMessageDocs = List.from(_savedMessageDocs);
-                    });
+                    // _savedMessageDocs.removeWhere((msg) =>
+                    // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                    // setStateIfMounted(() {
+                    //   _savedMessageDocs = List.from(_savedMessageDocs);
+                    // });
                     Future.delayed(const Duration(milliseconds: 300), () {
                       Navigator.maybePop(
                         contextForDialog,
@@ -1069,12 +1647,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                             .doc('${realtimeDoc[Dbkeys.timestamp]}')
                             .delete();
                         delete(realtimeDoc[Dbkeys.timestamp]);
-                        Save.deleteMessage(peerNo, realtimeDoc);
-                        _savedMessageDocs.removeWhere((msg) =>
-                        msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
-                        setStateIfMounted(() {
-                          _savedMessageDocs = List.from(_savedMessageDocs);
-                        });
+                        // Save.deleteMessage(peerNo, realtimeDoc);
+                        // _savedMessageDocs.removeWhere((msg) =>
+                        // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                        // setStateIfMounted(() {
+                        //   _savedMessageDocs = List.from(_savedMessageDocs);
+                        // });
                         Future.delayed(const Duration(milliseconds: 300), () {
                           Navigator.maybePop(
                             contextForDialog,
@@ -1087,7 +1665,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       }
                     });
                   }
-                } else {
+                }
+                else {
                   //----Don't Delete Media from server, as recipient has not deleted the message from thier message list-----
                   FirebaseFirestore.instance
                       .collection(DbPaths.collectionmessages)
@@ -1097,12 +1676,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       .set({Dbkeys.hasSenderDeleted: true},
                       SetOptions(merge: true));
 
-                  Save.deleteMessage(peerNo, mssgDoc);
-                  _savedMessageDocs.removeWhere((msg) =>
-                  msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
-                  setStateIfMounted(() {
-                    _savedMessageDocs = List.from(_savedMessageDocs);
-                  });
+                  // Save.deleteMessage(peerNo, mssgDoc);
+                  // _savedMessageDocs.removeWhere((msg) =>
+                  // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                  // setStateIfMounted(() {
+                  //   _savedMessageDocs = List.from(_savedMessageDocs);
+                  // });
 
                   Map<String, dynamic> tempDoc = realtimeDoc;
                   setStateIfMounted(() {
@@ -1122,7 +1701,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               }
             });
           }));
-
       tiles.add(ListTile(
           dense: true,
           leading: Icon(Icons.delete),
@@ -1144,12 +1722,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   .delete();
               delete(mssgDoc[Dbkeys.timestamp]);
               Save.deleteMessage(peerNo, mssgDoc);
-              _savedMessageDocs.removeWhere(
-                      (msg) =>
-                  msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
-              setStateIfMounted(() {
-                _savedMessageDocs = List.from(_savedMessageDocs);
-              });
+              // _savedMessageDocs.removeWhere(
+              //         (msg) =>
+              //     msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+              // setStateIfMounted(() {
+              //   _savedMessageDocs = List.from(_savedMessageDocs);
+              // });
               Future.delayed(const Duration(milliseconds: 300), () {
                 Navigator.maybePop(contextForDialog);
                 Fiberchat.toast(
@@ -1173,12 +1751,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       .doc('${mssgDoc[Dbkeys.timestamp]}')
                       .delete();
                   delete(mssgDoc[Dbkeys.timestamp]);
-                  Save.deleteMessage(peerNo, mssgDoc);
-                  _savedMessageDocs.removeWhere((msg) =>
-                  msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
-                  setStateIfMounted(() {
-                    _savedMessageDocs = List.from(_savedMessageDocs);
-                  });
+                  // Save.deleteMessage(peerNo, mssgDoc);
+                  // _savedMessageDocs.removeWhere((msg) =>
+                  // msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
+                  // setStateIfMounted(() {
+                  //   _savedMessageDocs = List.from(_savedMessageDocs);
+                  // });
                   Future.delayed(const Duration(milliseconds: 300), () {
                     Navigator.maybePop(contextForDialog);
                     Fiberchat.toast(
@@ -1191,10 +1769,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             }
           }));
     }
+
     //####################-------------------- Delete Msgs for RECIPIENTS---------------------------------------------------
     if ((mssgDoc[Dbkeys.to] == currentUserNo &&
-        mssgDoc[Dbkeys.hasRecipientDeleted] == false) &&
-        saved == false) {
+        mssgDoc[Dbkeys.hasRecipientDeleted] == false)) {
       tiles.add(ListTile(
           dense: true,
           leading: Icon(Icons.delete_outline),
@@ -1222,7 +1800,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       ? mssgDoc[Dbkeys.isbroadcast]
                       : false) ==
                       true) {
-                    // -------Delete broadcast message completely as sender has already deleted
+                    // ------- Delete broadcast message completely as sender has already deleted
                     await FirebaseFirestore.instance
                         .collection(DbPaths.collectionmessages)
                         .doc(chatId)
@@ -1230,12 +1808,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         .doc('${realtimeDoc[Dbkeys.timestamp]}')
                         .delete();
                     delete(realtimeDoc[Dbkeys.timestamp]);
-                    Save.deleteMessage(peerNo, realtimeDoc);
-                    _savedMessageDocs.removeWhere((msg) =>
-                    msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
-                    setStateIfMounted(() {
-                      _savedMessageDocs = List.from(_savedMessageDocs);
-                    });
                     Future.delayed(const Duration(milliseconds: 300), () {
                       Navigator.maybePop(contextForDialog);
                       Fiberchat.toast(
@@ -1258,11 +1830,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                             .delete();
                         delete(realtimeDoc[Dbkeys.timestamp]);
                         Save.deleteMessage(peerNo, realtimeDoc);
-                        _savedMessageDocs.removeWhere((msg) =>
-                        msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
-                        setStateIfMounted(() {
-                          _savedMessageDocs = List.from(_savedMessageDocs);
-                        });
+
                         Future.delayed(const Duration(milliseconds: 300), () {
                           Navigator.maybePop(contextForDialog);
                           Fiberchat.toast(
@@ -1284,19 +1852,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       SetOptions(merge: true));
 
                   Save.deleteMessage(peerNo, mssgDoc);
-                  _savedMessageDocs.removeWhere((msg) =>
-                  msg[Dbkeys.timestamp] == mssgDoc[Dbkeys.timestamp]);
-                  setStateIfMounted(() {
-                    _savedMessageDocs = List.from(_savedMessageDocs);
-                  });
-                  if (isTemp == true) {
-                    Map<String, dynamic> tempDoc = realtimeDoc;
-                    setStateIfMounted(() {
-                      tempDoc[Dbkeys.hasRecipientDeleted] = true;
-                    });
-                    updateDeleteBySenderField(realtimeDoc[Dbkeys.timestamp],
-                        tempDoc, contextForDialog);
-                  }
+
+                  // if (isTemp == true) {
+                  //   Map<String, dynamic> tempDoc = realtimeDoc;
+                  //   setStateIfMounted(() {
+                  //     tempDoc[Dbkeys.hasRecipientDeleted] = true;
+                  //   });
+                  //   updateDeleteBySenderField(realtimeDoc[Dbkeys.timestamp],
+                  //       tempDoc, contextForDialog);
+                  // }
                   Future.delayed(const Duration(milliseconds: 300), () {
                     Navigator.maybePop(contextForDialog);
                     Fiberchat.toast(
@@ -1630,11 +2194,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 .doc('${doc[Dbkeys.timestamp]}')
                 .update({Dbkeys.hasRecipientDeleted: true});
             Save.deleteMessage(peerNo, doc);
-            _savedMessageDocs.removeWhere(
-                    (msg) => msg[Dbkeys.timestamp] == doc[Dbkeys.timestamp]);
-            setStateIfMounted(() {
-              _savedMessageDocs = List.from(_savedMessageDocs);
-            });
+            // _savedMessageDocs.removeWhere(
+            //         (msg) => msg[Dbkeys.timestamp] == doc[Dbkeys.timestamp]);
+            // setStateIfMounted(() {
+            //   _savedMessageDocs = List.from(_savedMessageDocs);
+            // });
 
             Future.delayed(const Duration(milliseconds: 300), () {
               Navigator.maybePop(context);
@@ -1710,26 +2274,26 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     Fiberchat.toast(
       getTranslated(this.context, 'saved'),
     );
-    if (!_savedMessageDocs
-        .any((_doc) => _doc[Dbkeys.timestamp] == doc[Dbkeys.timestamp])) {
-      String? content;
-      if (doc[Dbkeys.messageType] == MessageType.image.index) {
-        content = doc[Dbkeys.content].toString().startsWith('http')
-            ? await Save.getBase64FromImage(
-            imageUrl: doc[Dbkeys.content] as String?)
-            : doc[Dbkeys
-            .content]; // if not a url, it is a base64 from saved messages
-      } else {
-        // If text
-        content = doc[Dbkeys.content];
-      }
-      doc[Dbkeys.content] = content;
-      Save.saveMessage(peerNo, doc);
-      _savedMessageDocs.add(doc);
-      setStateIfMounted(() {
-        _savedMessageDocs = List.from(_savedMessageDocs);
-      });
-    }
+    // if (!_savedMessageDocs
+    //     .any((_doc) => _doc[Dbkeys.timestamp] == doc[Dbkeys.timestamp])) {
+    //   String? content;
+    //   if (doc[Dbkeys.messageType] == MessageType.image.index) {
+    //     content = doc[Dbkeys.content].toString().startsWith('http')
+    //         ? await Save.getBase64FromImage(
+    //         imageUrl: doc[Dbkeys.content] as String?)
+    //         : doc[Dbkeys
+    //         .content]; // if not a url, it is a base64 from saved messages
+    //   } else {
+    //     // If text
+    //     content = doc[Dbkeys.content];
+    //   }
+    //   doc[Dbkeys.content] = content;
+    //   Save.saveMessage(peerNo, doc);
+    //   _savedMessageDocs.add(doc);
+    //   setStateIfMounted(() {
+    //     _savedMessageDocs = List.from(_savedMessageDocs);
+    //   });
+    // }
   }
 
   Widget selectablelinkify(String? text, double? fontsize) {
@@ -2571,7 +3135,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     bool isContinuing;
     if (savedMsgs == null)
       isContinuing =
-      messages.isNotEmpty ? messages.last.from == doc[Dbkeys.from] : false;
+      _messageList.isNotEmpty ? _messageList.last[Dbkeys.from] ==
+          doc[Dbkeys.from] : false;
     else {
       isContinuing = savedMsgs.isNotEmpty
           ? savedMsgs.last.from == doc[Dbkeys.from]
@@ -2582,6 +3147,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         data: seenState,
         child: Bubble(
             mssgDoc: doc,
+            refresh: () {
+              setState(() {
+
+              });
+            },
+            isMsgStar: currentUser != null
+                ? ((doc[Dbkeys.userStarList] ?? []) as List<dynamic>).contains(
+                currentUser![Dbkeys.phone])
+                : false,
             is24hrsFormat: observer.is24hrsTimeformat,
             isMssgDeleted: (doc.containsKey(Dbkeys.hasRecipientDeleted) &&
                 doc.containsKey(Dbkeys.hasSenderDeleted))
@@ -3311,6 +3885,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         data: seenState,
         child: Bubble(
           mssgDoc: tempDoc,
+          refresh: () {
+            setState(() {
+
+            });
+          },
+          isMsgStar: currentUser != null
+              ? ((tempDoc[Dbkeys.userStarList] ?? []) as List<dynamic>)
+              .contains(currentUser![Dbkeys.phone])
+              : false,
           is24hrsFormat: observer.is24hrsTimeformat,
           isMssgDeleted: ((tempDoc.containsKey(Dbkeys.hasRecipientDeleted) &&
               tempDoc.containsKey(Dbkeys.hasSenderDeleted)) ==
@@ -3345,7 +3928,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           timestamp: timestamp,
           delivered: delivered,
           isContinuing:
-          messages.isNotEmpty && messages.last.from == currentUserNo,
+          _messageList.isNotEmpty &&
+              _messageList.last[Dbkeys.from] == currentUserNo,
         ));
   }
 
@@ -3411,32 +3995,53 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       children: [
                         RawMaterialButton(
                           disabledElevation: 0,
-                          onPressed: () {
+                          onPressed: () async {
                             hidekeyboard(context);
                             Navigator.of(context).pop();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        MultiDocumentPicker(
-                                          title: getTranslated(
-                                              this.context, 'pickdoc'),
-                                          callback: getFileData,
-                                          writeMessage:
-                                              (String? url, int time) async {
-                                            if (url != null) {
-                                              String finalUrl = url +
-                                                  '-BREAK-' +
-                                                  basename(pickedFile!.path)
-                                                      .toString();
-                                              onSendMessage(
-                                                  this.context,
-                                                  finalUrl,
-                                                  MessageType.doc,
-                                                  time);
-                                            }
-                                          },
-                                        )));
+                            FilePickerResult? result = await FilePicker.platform
+                                .pickFiles(type: FileType.any);
+
+                            if (result != null) {
+                              int messagetime =
+                                  DateTime
+                                      .now()
+                                      .millisecondsSinceEpoch;
+                              for (int i = 0; i < result.files.length; i++) {
+                                var url = await getFileData(
+                                    File(result.files[i].path!));
+                                if (url != null) {
+                                  String finalUrl = url +
+                                      '-BREAK-' +
+                                      path.basename(pickedFile!.path)
+                                          .toString();
+                                  onSendMessage(this.context, finalUrl,
+                                      MessageType.doc, messagetime);
+                                } else {}
+                              }
+                            }
+                            // Navigator.push(
+                            //     context,
+                            //     MaterialPageRoute(
+                            //         builder: (context) =>
+                            //             MultiDocumentPicker(
+                            //               title: getTranslated(
+                            //                   this.context, 'pickdoc'),
+                            //               callback: getFileData,
+                            //               writeMessage:
+                            //                   (String? url, int time) async {
+                            //                 if (url != null) {
+                            //                   String finalUrl = url +
+                            //                       '-BREAK-' +
+                            //                       basename(pickedFile!.path)
+                            //                           .toString();
+                            //                   onSendMessage(
+                            //                       this.context,
+                            //                       finalUrl,
+                            //                       MessageType.doc,
+                            //                       time);
+                            //                 }
+                            //               },
+                            //             )));
                           },
                           elevation: .5,
                           fillColor: Colors.indigo,
@@ -3473,9 +4078,43 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       children: [
                         RawMaterialButton(
                           disabledElevation: 0,
-                          onPressed: () {
+                          onPressed: () async {
                             hidekeyboard(context);
                             Navigator.of(context).pop();
+
+                            FilePickerResult? result = await FilePicker.platform
+                                .pickFiles(type: FileType.video);
+
+                            if (result != null) {
+                              int messagetime =
+                                  DateTime
+                                      .now()
+                                      .millisecondsSinceEpoch;
+                              for (int i = 0; i < result.files.length; i++) {
+                                var url = await getFileData(
+                                    File(result.files[i].path!),
+                                    timestamp: messagetime);
+                                if (url != null) {
+                                  Fiberchat.toast(
+                                    getTranslated(this.context, 'plswait'),
+                                  );
+                                  String thumbnailurl = await getThumbnail(url);
+                                  onSendMessage(
+                                      context,
+                                      url +
+                                          '-BREAK-' +
+                                          thumbnailurl +
+                                          '-BREAK-' +
+                                          videometadata,
+                                      MessageType.video,
+                                      thumnailtimestamp);
+                                  Fiberchat.toast(
+                                      getTranslated(this.context, 'sent'));
+                                } else {}
+                              }
+                            }
+
+                            return;
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -3539,9 +4178,28 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       children: [
                         RawMaterialButton(
                           disabledElevation: 0,
-                          onPressed: () {
+                          onPressed: () async {
                             hidekeyboard(context);
                             Navigator.of(context).pop();
+                            FilePickerResult? result = await FilePicker.platform
+                                .pickFiles(type: FileType.image);
+
+                            if (result != null) {
+                              int messagetime =
+                                  DateTime
+                                      .now()
+                                      .millisecondsSinceEpoch;
+                              for (int i = 0; i < result.files.length; i++) {
+                                var url = await getFileData(
+                                    File(result.files[i].path!));
+                                if (url != null) {
+                                  onSendMessage(this.context, url,
+                                      MessageType.image, messagetime);
+                                }
+                              }
+                            }
+
+                            return;
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -3629,20 +4287,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                             // });
                             Navigator.pop(context);
                             FilePickerResult? result = await FilePicker.platform
-                                .pickFiles(
-                                type: FileType.audio);
+                                .pickFiles(type: FileType.audio);
 
                             if (result != null) {
-                            var recordedUrl =  await getFileData(File(result.files[0].path!));
-                                if (recordedUrl != null) {
-                                  onSendMessage(
-                                      context,
-                                      recordedUrl +
-                                          '-BREAK-' +
-                                          uploadTimestamp.toString(),
-                                      MessageType.audio,
-                                      uploadTimestamp);
-                                } else {}
+                              var recordedUrl = await getFileData(
+                                  File(result.files[0].path!));
+                              if (recordedUrl != null) {
+                                onSendMessage(
+                                    context,
+                                    recordedUrl +
+                                        '-BREAK-' +
+                                        uploadTimestamp.toString(),
+                                    MessageType.audio,
+                                    uploadTimestamp);
+                              } else {}
                             }
                           },
                           elevation: .5,
@@ -3682,6 +4340,27 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           onPressed: () async {
                             hidekeyboard(context);
                             Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) =>
+                                    LocationPickScreen(
+                                      sendLocation: (LatLng latLng) {
+                                        var locationstring =
+                                            'https://www.google.com/maps/search/?api=1&query=${latLng
+                                            .latitude},${latLng.longitude}';
+                                        onSendMessage(
+                                            context,
+                                            locationstring,
+                                            MessageType.location,
+                                            DateTime
+                                                .now()
+                                                .millisecondsSinceEpoch);
+                                        setStateIfMounted(() {});
+                                        Fiberchat.toast(
+                                          getTranslated(this.context, 'sent'),
+                                        );
+                                      },
+                                    )));
+                            return;
                             await _determinePosition().then(
                                   (location) async {
                                 var locationstring =
@@ -4411,65 +5090,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         .then((docs) {
       if (docs.docs.isNotEmpty) {
         empty = false;
-        docs.docs.forEach((doc) {
-          Map<String, dynamic> _doc = Map.from(doc.data());
-          int? ts = _doc[Dbkeys.timestamp];
-          _doc[Dbkeys.content] = decryptWithCRC(_doc[Dbkeys.content]);
-          messages.add(Message(buildMessage(this.context, _doc),
-              onDismiss:
-              _doc[Dbkeys.content] == '' || _doc[Dbkeys.content] == null
-                  ? () {}
-                  : () {
-                setStateIfMounted(() {
-                  isReplyKeyboard = true;
-                  replyDoc = _doc;
-                });
-                HapticFeedback.heavyImpact();
-                keyboardFocusNode.requestFocus();
-              },
-              onTap: (_doc[Dbkeys.from] == widget.currentUserNo &&
-                  _doc[Dbkeys.hasSenderDeleted] == true) ==
-                  true
-                  ? () {}
-                  : _doc[Dbkeys.messageType] == MessageType.image.index
-                  ? () {
-                Navigator.push(
-                    this.context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          PhotoViewWrapper(
-                            message: _doc[Dbkeys.content],
-                            tag: ts.toString(),
-                            imageProvider: CachedNetworkImageProvider(
-                                _doc[Dbkeys.content]),
-                          ),
-                    ));
-              }
-                  : null,
-              onDoubleTap: _doc.containsKey(Dbkeys.broadcastID) ? () {} : () {},
-              onLongPress: () {
-                if (_doc.containsKey(Dbkeys.hasRecipientDeleted) &&
-                    _doc.containsKey(Dbkeys.hasSenderDeleted)) {
-                  if ((_doc[Dbkeys.from] == widget.currentUserNo &&
-                      _doc[Dbkeys.hasSenderDeleted] == true) ==
-                      false) {
-                    //--Show Menu only if message is not deleted by current user already
-                    contextMenuNew(this.context, _doc, false);
-                  }
-                } else {
-                  contextMenuOld(this.context, _doc);
-                }
-              },
-              from: _doc[Dbkeys.from],
-              timestamp: ts));
 
-          if (doc.data()[Dbkeys.timestamp] ==
-              docs.docs.last.data()[Dbkeys.timestamp]) {
-            setStateIfMounted(() {
-              isMessageLoading = false;
-              // print('All message loaded..........');
-            });
-          }
+        docs.docs.forEach((element) {
+          Map<String, dynamic> data = Map.from(element.data());
+          data[Dbkeys.content] = decryptWithCRC(data[Dbkeys.content]);
+          _messageList.add(data);
+        });
+        setStateIfMounted(() {
+          isMessageLoading = false;
         });
       } else {
         setStateIfMounted(() {
@@ -4478,9 +5106,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         });
       }
       if (mounted) {
-        setStateIfMounted(() {
-          messages = List.from(messages);
-        });
+        setStateIfMounted(() {});
       }
       msgSubscription = FirebaseFirestore.instance
           .collection(DbPaths.collectionmessages)
@@ -4503,59 +5129,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             int? ts = _doc[Dbkeys.timestamp];
             _doc[Dbkeys.content] = decryptWithCRC(_doc[Dbkeys.content]);
 
-            messages.add(Message(
-              buildMessage(this.context, _doc),
-              onDismiss:
-              _doc[Dbkeys.content] == '' || _doc[Dbkeys.content] == null
-                  ? () {}
-                  : () {
-                setStateIfMounted(() {
-                  isReplyKeyboard = true;
-                  replyDoc = _doc;
-                });
-                HapticFeedback.heavyImpact();
-                keyboardFocusNode.requestFocus();
-              },
-              onLongPress: () {
-                if (_doc.containsKey(Dbkeys.hasRecipientDeleted) &&
-                    _doc.containsKey(Dbkeys.hasSenderDeleted)) {
-                  if ((_doc[Dbkeys.from] == widget.currentUserNo &&
-                      _doc[Dbkeys.hasSenderDeleted] == true) ==
-                      false) {
-                    //--Show Menu only if message is not deleted by current user already
-                    contextMenuNew(this.context, _doc, false);
-                  }
-                } else {
-                  contextMenuOld(this.context, _doc);
-                }
-              },
-              onTap: (_doc[Dbkeys.from] == widget.currentUserNo &&
-                  _doc[Dbkeys.hasSenderDeleted] == true) ==
-                  true
-                  ? () {}
-                  : _doc[Dbkeys.messageType] == MessageType.image.index
-                  ? () {
-                Navigator.push(
-                    this.context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          PhotoViewWrapper(
-                            message: _doc[Dbkeys.content],
-                            tag: ts.toString(),
-                            imageProvider: CachedNetworkImageProvider(
-                                _doc[Dbkeys.content]),
-                          ),
-                    ));
-              }
-                  : null,
-              onDoubleTap: _doc.containsKey(Dbkeys.broadcastID)
-                  ? () {}
-                  : () {
-                // save(_doc);
-              },
-              from: _doc[Dbkeys.from],
-              timestamp: ts,
-            ));
+            _messageList.add(_doc);
           });
           //----below action triggers when peer message get deleted
           query.docChanges.where((doc) {
@@ -4563,90 +5137,35 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           }).forEach((change) {
             Map<String, dynamic> _doc = Map.from(change.doc.data()!);
 
-            int i = messages.indexWhere(
-                    (element) => element.timestamp == _doc[Dbkeys.timestamp]);
-            if (i >= 0) messages.removeAt(i);
+            int i = _messageList.indexWhere(
+                    (element) =>
+                element[Dbkeys.timestamp] == _doc[Dbkeys.timestamp]);
+            if (i >= 0) _messageList.removeAt(i);
             Save.deleteMessage(peerNo, _doc);
-            _savedMessageDocs.removeWhere(
-                    (msg) => msg[Dbkeys.timestamp] == _doc[Dbkeys.timestamp]);
-            setStateIfMounted(() {
-              _savedMessageDocs = List.from(_savedMessageDocs);
-            });
+            // _savedMessageDocs.removeWhere(
+            //         (msg) => msg[Dbkeys.timestamp] == _doc[Dbkeys.timestamp]);
+            // setStateIfMounted(() {
+            //   _savedMessageDocs = List.from(_savedMessageDocs);
+            // });
           }); //----below action triggers when peer message gets modified
           query.docChanges.where((doc) {
             return doc.type == DocumentChangeType.modified;
           }).forEach((change) {
             Map<String, dynamic> _doc = Map.from(change.doc.data()!);
 
-            int i = messages.indexWhere(
-                    (element) => element.timestamp == _doc[Dbkeys.timestamp]);
+            int i = _messageList.indexWhere(
+                    (element) =>
+                element[Dbkeys.timestamp] == _doc[Dbkeys.timestamp]);
             if (i >= 0) {
-              messages.removeAt(i);
+              _messageList.removeAt(i);
               setStateIfMounted(() {});
               int? ts = _doc[Dbkeys.timestamp];
               _doc[Dbkeys.content] = decryptWithCRC(_doc[Dbkeys.content]);
-              messages.insert(
-                  i,
-                  Message(
-                    buildMessage(this.context, _doc),
-                    onLongPress: () {
-                      if (_doc.containsKey(Dbkeys.hasRecipientDeleted) &&
-                          _doc.containsKey(Dbkeys.hasSenderDeleted)) {
-                        if ((_doc[Dbkeys.from] == widget.currentUserNo &&
-                            _doc[Dbkeys.hasSenderDeleted] == true) ==
-                            false) {
-                          //--Show Menu only if message is not deleted by current user already
-                          contextMenuNew(this.context, _doc, false);
-                        }
-                      } else {
-                        contextMenuOld(this.context, _doc);
-                      }
-                    },
-                    onTap: (_doc[Dbkeys.from] == widget.currentUserNo &&
-                        _doc[Dbkeys.hasSenderDeleted] == true) ==
-                        true
-                        ? () {}
-                        : _doc[Dbkeys.messageType] == MessageType.image.index
-                        ? () {
-                      Navigator.push(
-                          this.context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                PhotoViewWrapper(
-                                  message: _doc[Dbkeys.content],
-                                  tag: ts.toString(),
-                                  imageProvider:
-                                  CachedNetworkImageProvider(
-                                      _doc[Dbkeys.content]),
-                                ),
-                          ));
-                    }
-                        : null,
-                    onDoubleTap: _doc.containsKey(Dbkeys.broadcastID)
-                        ? () {}
-                        : () {
-                      // save(_doc);
-                    },
-                    from: _doc[Dbkeys.from],
-                    timestamp: ts,
-                    onDismiss: _doc[Dbkeys.content] == '' ||
-                        _doc[Dbkeys.content] == null
-                        ? () {}
-                        : () {
-                      setStateIfMounted(() {
-                        isReplyKeyboard = true;
-                        replyDoc = _doc;
-                      });
-                      HapticFeedback.heavyImpact();
-                      keyboardFocusNode.requestFocus();
-                    },
-                  ));
+              _messageList.add(_doc);
             }
           });
           if (mounted) {
-            setStateIfMounted(() {
-              messages = List.from(messages);
-            });
+            setStateIfMounted(() {});
           }
         }
       });
@@ -4727,7 +5246,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               ? imageUrl + '-BREAK-' + uploadTimestamp.toString()
               : imageUrl +
               '-BREAK-' +
-              basename(pickedFile!.path).toString();
+              path.basename(pickedFile!.path).toString();
           onSendMessage(this.context, finalUrl, type, messagetime);
         }
       }).then((value) {
@@ -4743,16 +5262,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   void loadSavedMessages() {
-    if (_savedMessageDocs.isEmpty) {
-      Save.getSavedMessages(peerNo).then((_msgDocs) {
-        // ignore: unnecessary_null_comparison
-        if (_msgDocs != null) {
-          setStateIfMounted(() {
-            _savedMessageDocs = _msgDocs;
-          });
-        }
-      });
-    }
+    // if (_savedMessageDocs.isEmpty) {
+    //   Save.getSavedMessages(peerNo).then((_msgDocs) {
+    //     // ignore: unnecessary_null_comparison
+    //     if (_msgDocs != null) {
+    //       setStateIfMounted(() {
+    //         _savedMessageDocs = _msgDocs;
+    //       });
+    //     }
+    //   });
+    // }
   }
 
   List<Widget> sortAndGroupSavedMessages(BuildContext context,
@@ -4855,9 +5374,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       ),
     ]);
     int count = 0;
-    groupBy<Message, String>(messages, (msg) {
-      return getWhen(DateTime.fromMillisecondsSinceEpoch(msg.timestamp!));
+    print("messages ==>  ${_messageList.length}");
+    groupBy<Map<String, dynamic>, String>(_messageList, (msg) {
+      return getWhen(
+          DateTime.fromMillisecondsSinceEpoch(msg[Dbkeys.timestamp]!));
     }).forEach((when, _actualMessages) {
+      print("messages ==> _actualMessages ${_actualMessages.length}");
+      log("messages ==> _actualMessages ${_actualMessages}");
       _groupedMessages.add(Center(
           child: Chip(
             backgroundColor: Colors.blue[50],
@@ -4866,9 +5389,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               style: TextStyle(color: Colors.black54, fontSize: 14),
             ),
           )));
-      _actualMessages.forEach((msg) {
+      _actualMessages.forEach((_doc) {
         count++;
-        if (unread != 0 && (messages.length - count) == unread! - 1) {
+        if (unread != 0 && (_messageList.length - count) == unread! - 1) {
           _groupedMessages.add(Center(
               child: Chip(
                 backgroundColor: Colors.blueGrey[50],
@@ -4876,32 +5399,88 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               )));
           unread = 0; // reset
         }
-        _groupedMessages.add(msg.child);
+        int? ts = _doc[Dbkeys.timestamp];
+        Message message = Message(buildMessage(this.context, _doc),
+            onDismiss:
+            _doc[Dbkeys.content] == '' || _doc[Dbkeys.content] == null
+                ? () {}
+                : () {
+              setStateIfMounted(() {
+                isReplyKeyboard = true;
+                replyDoc = _doc;
+              });
+              HapticFeedback.heavyImpact();
+              keyboardFocusNode.requestFocus();
+            },
+            onTap: (_doc[Dbkeys.from] == widget.currentUserNo &&
+                _doc[Dbkeys.hasSenderDeleted] == true) ==
+                true
+                ? () {}
+                : _doc[Dbkeys.messageType] == MessageType.image.index
+                ? () {
+              Navigator.push(
+                  this.context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        PhotoViewWrapper(
+                          message: _doc[Dbkeys.content],
+                          tag: ts.toString(),
+                          imageProvider: CachedNetworkImageProvider(
+                              _doc[Dbkeys.content]),
+                        ),
+                  ));
+            }
+                : null,
+            onDoubleTap: _doc.containsKey(Dbkeys.broadcastID) ? () {} : () {},
+            onLongPress: () {
+              if (_doc.containsKey(Dbkeys.hasRecipientDeleted) &&
+                  _doc.containsKey(Dbkeys.hasSenderDeleted)) {
+                if ((_doc[Dbkeys.from] == widget.currentUserNo &&
+                    _doc[Dbkeys.hasSenderDeleted] == true) ==
+                    false) {
+                  //--Show Menu only if message is not deleted by current user already
+                  if (selectedMessageDocs.isEmpty) {
+                    selectedMessageDocs.add(_doc);
+                    setState(() {
+
+                    });
+                  }
+
+                  // contextMenuNew(this.context, _doc);
+                }
+              } else {
+                contextMenuOld(this.context, _doc);
+              }
+            },
+            from: _doc[Dbkeys.from],
+            timestamp: ts);
+        _groupedMessages.add(message.child);
       });
     });
     return _groupedMessages.reversed.toList();
   }
 
   Widget buildSavedMessages(BuildContext context,) {
-    return Flexible(
-        child: ListView(
-          padding: EdgeInsets.all(10.0),
-          children: _savedMessageDocs.isEmpty
-              ? [
-            Padding(
-                padding: EdgeInsets.only(top: 200.0),
-                child: Text(getTranslated(this.context, 'nosave'),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.blueGrey, fontSize: 18)))
-          ]
-              : sortAndGroupSavedMessages(context, _savedMessageDocs),
-          controller: saved,
-        ));
+    // return Flexible(
+    //     child: ListView(
+    //       padding: EdgeInsets.all(10.0),
+    //       children: _savedMessageDocs.isEmpty
+    //           ? [
+    //         Padding(
+    //             padding: EdgeInsets.only(top: 200.0),
+    //             child: Text(getTranslated(this.context, 'nosave'),
+    //                 textAlign: TextAlign.center,
+    //                 style: TextStyle(color: Colors.blueGrey, fontSize: 18)))
+    //       ]
+    //           : sortAndGroupSavedMessages(context, _savedMessageDocs),
+    //       controller: saved,
+    //     ));
+    return Container();
   }
 
   Widget buildMessages(BuildContext context,) {
     return Flexible(
-        child: chatId == '' || messages.isEmpty || sharedSecret == null
+        child: chatId == '' || _messageList.isEmpty || sharedSecret == null
             ? ListView(
           children: <Widget>[
             Card(),
@@ -5006,627 +5585,666 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         .of(context)
         .viewInsets
         .bottom != 0;
+    print("dewbfuruev ==>  $context");
     return PickupLayout(
       scaffold: Fiberchat.getNTPWrappedWidget(WillPopScope(
-          onWillPop: isgeneratingSomethingLoader == true
-              ? () async {
-            return Future.value(false);
-          }
-              : isemojiShowing == true
-              ? () {
-            setState(() {
-              isemojiShowing = false;
-              keyboardFocusNode.unfocus();
-            });
-            return Future.value(false);
-          }
-              : () async {
-            setLastSeen();
-            WidgetsBinding.instance!
-                .addPostFrameCallback((timeStamp) async {
-              var currentpeer = Provider.of<CurrentChatPeer>(
-                  this.context,
-                  listen: false);
-              currentpeer.setpeer(newpeerid: '');
-              if (lastSeen == peerNo)
-                await FirebaseFirestore.instance
-                    .collection(DbPaths.collectionusers)
-                    .doc(currentUserNo)
-                    .update(
-                  {Dbkeys.lastSeen: true},
-                );
-            });
+        onWillPop: isgeneratingSomethingLoader == true
+            ? () async {
+          return Future.value(false);
+        }
+            : isemojiShowing == true
+            ? () {
+          setState(() {
+            isemojiShowing = false;
+            keyboardFocusNode.unfocus();
+          });
+          return Future.value(false);
+        }
+            : () async {
+          setLastSeen();
+          WidgetsBinding.instance!
+              .addPostFrameCallback((timeStamp) async {
+            var currentpeer = Provider.of<CurrentChatPeer>(
+                this.context,
+                listen: false);
+            currentpeer.setpeer(newpeerid: '');
+            if (lastSeen == peerNo)
+              await FirebaseFirestore.instance
+                  .collection(DbPaths.collectionusers)
+                  .doc(currentUserNo)
+                  .update(
+                {Dbkeys.lastSeen: true},
+              );
+          });
 
-            return Future.value(true);
-          },
-          child: ScopedModel<DataModel>(
-              model: _cachedModel,
-              child: ScopedModelDescendant<DataModel>(
-                  builder: (context, child, _model) {
-                    _cachedModel = _model;
-                    updateLocalUserData(_model);
-                    return peer != null
-                        ? Stack(
-                      children: [
-                        Scaffold(
-                            key: _scaffold,
-                            appBar: AppBar(
-                              titleSpacing: -14,
-                              leading: Container(
-                                margin: EdgeInsets.only(right: 0),
-                                width: 10,
-                                child: IconButton(
-                                  icon: Icon(
-                                    Icons.arrow_back_ios,
-                                    size: 20,
-                                    color: DESIGN_TYPE == Themetype.whatsapp
-                                        ? fiberchatWhite
-                                        : fiberchatBlack,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                ),
+          return Future.value(true);
+        },
+        child: ScopedModel<DataModel>(
+          model: _cachedModel,
+          child: ScopedModelDescendant<DataModel>(
+            builder: (context, child, _model) {
+              _cachedModel = _model;
+              updateLocalUserData(_model);
+              return peer != null
+                  ? Stack(
+                children: [
+                  Scaffold(
+                      key: _scaffold,
+                      appBar: selectedMessageDocs.isNotEmpty ? AppBar(
+                        titleSpacing: -7,
+                        leading: Container(
+                          margin: EdgeInsets.only(right: 0),
+                          width: 10,
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back_ios,
+                              size: 20,
+                              color: DESIGN_TYPE == Themetype.whatsapp
+                                  ? fiberchatWhite
+                                  : fiberchatBlack,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                        backgroundColor:
+                        DESIGN_TYPE == Themetype.whatsapp
+                            ? fiberchatDeepGreen
+                            : fiberchatWhite,
+                        title: Text("${selectedMessageDocs.length}",
+
+                        ),
+                        actions: [
+                          IconButton(
+                            onPressed: _msgStarRated,
+                            icon: Icon(Icons.star),
+                          ), IconButton(
+                            onPressed: _msgUnStarRated,
+                            icon: Icon(Icons.star_border),
+                          ),
+                          IconButton(
+                            onPressed: _showDeleteDialog,
+                            icon: Icon(Icons.delete),
+                          ),
+                          SizedBox(width: 5),
+                        ],
+                      ) : AppBar(
+                        titleSpacing: -14,
+                        leading: Container(
+                          margin: EdgeInsets.only(right: 0),
+                          width: 10,
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back_ios,
+                              size: 20,
+                              color: DESIGN_TYPE == Themetype.whatsapp
+                                  ? fiberchatWhite
+                                  : fiberchatBlack,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                        backgroundColor:
+                        DESIGN_TYPE == Themetype.whatsapp
+                            ? fiberchatDeepGreen
+                            : fiberchatWhite,
+                        title: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                    opaque: false,
+                                    pageBuilder: (context, a1, a2) =>
+                                        ProfileView(
+                                            peer!,
+                                            widget.currentUserNo,
+                                            _cachedModel,
+                                            widget.prefs)));
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                    0, 7, 0, 7),
+                                child:
+                                Fiberchat.avatar(peer, radius: 20),
                               ),
-                              backgroundColor:
-                              DESIGN_TYPE == Themetype.whatsapp
-                                  ? fiberchatDeepGreen
-                                  : fiberchatWhite,
-                              title: InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                          opaque: false,
-                                          pageBuilder: (context, a1, a2) =>
-                                              ProfileView(
-                                                  peer!,
-                                                  widget.currentUserNo,
-                                                  _cachedModel,
-                                                  widget.prefs)));
-                                },
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          0, 7, 0, 7),
-                                      child:
-                                      Fiberchat.avatar(peer, radius: 20),
-                                    ),
-                                    SizedBox(
-                                      width: 7,
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          width: MediaQuery
-                                              .of(this.context)
-                                              .size
-                                              .width /
-                                              2.3,
-                                          child: Text(
-                                            Fiberchat.getNickname(peer!)!,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                                color: DESIGN_TYPE ==
-                                                    Themetype.whatsapp
-                                                    ? fiberchatWhite
-                                                    : fiberchatBlack,
-                                                fontSize: 17.0,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 4,
-                                        ),
-                                        chatId != null
-                                            ? Text(
-                                          getPeerStatus(
-                                              peer![Dbkeys.lastSeen]),
-                                          style: TextStyle(
-                                              color: DESIGN_TYPE ==
-                                                  Themetype.whatsapp
-                                                  ? fiberchatWhite
-                                                  : fiberchatGrey,
-                                              fontSize: 12,
-                                              fontWeight:
-                                              FontWeight.w400),
-                                        )
-                                            : Text(
-                                          'loading…',
-                                          style: TextStyle(
-                                              color: DESIGN_TYPE ==
-                                                  Themetype.whatsapp
-                                                  ? fiberchatWhite
-                                                  : fiberchatGrey,
-                                              fontSize: 12,
-                                              fontWeight:
-                                              FontWeight.w400),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                              SizedBox(
+                                width: 7,
                               ),
-                              actions: [
-                                observer.isCallFeatureTotallyHide == true
-                                    ? SizedBox()
-                                    : SizedBox(
-                                  width: 35,
-                                  child: IconButton(
-                                      icon: Icon(
-                                        Icons.video_call,
-                                        color: DESIGN_TYPE ==
-                                            Themetype.whatsapp
-                                            ? fiberchatWhite
-                                            : fiberchatgreen,
-                                      ),
-                                      onPressed: observer
-                                          .iscallsallowed ==
-                                          false
-                                          ? () {
-                                        Fiberchat.showRationale(
-                                            getTranslated(
-                                                this.context,
-                                                'callnotallowed'));
-                                      }
-                                          : hasPeerBlockedMe == true
-                                          ? () {
-                                        Fiberchat.toast(
-                                          getTranslated(
-                                              context,
-                                              'userhasblocked'),
-                                        );
-                                      }
-                                          : () async {
-                                        final observer =
-                                        Provider.of<
-                                            Observer>(
-                                            this.context,
-                                            listen:
-                                            false);
-                                        if (IsInterstitialAdShow ==
-                                            true &&
-                                            observer.isadmobshow ==
-                                                true) {}
-
-                                        await Permissions
-                                            .cameraAndMicrophonePermissionsGranted()
-                                            .then(
-                                                (isgranted) {
-                                              if (isgranted ==
-                                                  true) {
-                                                call(context,
-                                                    true);
-                                              } else {
-                                                Fiberchat.showRationale(
-                                                    getTranslated(
-                                                        this.context,
-                                                        'pmc'));
-                                                Navigator.push(
-                                                    context,
-                                                    new MaterialPageRoute(
-                                                        builder:
-                                                            (context) =>
-                                                            OpenSettings()));
-                                              }
-                                            }).catchError(
-                                                (onError) {
-                                              Fiberchat.showRationale(
-                                                  getTranslated(
-                                                      this.context,
-                                                      'pmc'));
-                                              Navigator.push(
-                                                  context,
-                                                  new MaterialPageRoute(
-                                                      builder:
-                                                          (context) =>
-                                                          OpenSettings()));
-                                            });
-                                      }),
-                                ),
-                                observer.isCallFeatureTotallyHide == true
-                                    ? SizedBox()
-                                    : SizedBox(
-                                  width: 55,
-                                  child: IconButton(
-                                      icon: Icon(
-                                        Icons.phone,
-                                        color: DESIGN_TYPE ==
-                                            Themetype.whatsapp
-                                            ? fiberchatWhite
-                                            : fiberchatgreen,
-                                      ),
-                                      onPressed: observer
-                                          .iscallsallowed ==
-                                          false
-                                          ? () {
-                                        print('z');
-                                        Fiberchat.showRationale(
-                                            getTranslated(
-                                                this.context,
-                                                'callnotallowed'));
-                                      }
-                                          : hasPeerBlockedMe == true
-                                          ? () {
-                                        print('zhh');
-                                        Fiberchat.toast(
-                                          getTranslated(
-                                              context,
-                                              'userhasblocked'),
-                                        );
-                                      }
-                                          : () async {
-                                        print('ll');
-                                        final observer =
-                                        Provider.of<
-                                            Observer>(
-                                            this.context,
-                                            listen:
-                                            false);
-                                        if (IsInterstitialAdShow ==
-                                            true &&
-                                            observer.isadmobshow ==
-                                                true) {}
-
-                                        await Permissions
-                                            .cameraAndMicrophonePermissionsGranted()
-                                            .then(
-                                                (isgranted) {
-                                              print('ww');
-                                              if (isgranted ==
-                                                  true) {
-                                                call(context,
-                                                    false);
-                                              } else {
-                                                Fiberchat.showRationale(
-                                                    getTranslated(
-                                                        this.context,
-                                                        'pmc'));
-                                                Navigator.push(
-                                                    context,
-                                                    new MaterialPageRoute(
-                                                        builder:
-                                                            (context) =>
-                                                            OpenSettings()));
-                                              }
-                                            }).catchError(
-                                                (onError) {
-                                              Fiberchat.showRationale(
-                                                  getTranslated(
-                                                      this.context,
-                                                      'pmc'));
-                                              Navigator.push(
-                                                  context,
-                                                  new MaterialPageRoute(
-                                                      builder:
-                                                          (context) =>
-                                                          OpenSettings()));
-                                            });
-                                      }),
-                                ),
-                                SizedBox(
-                                  width: observer.isCallFeatureTotallyHide ==
-                                      true
-                                      ? 45
-                                      : 25,
-                                  child: PopupMenuButton(
-                                      padding: EdgeInsets.all(0),
-                                      icon: Padding(
-                                        padding:
-                                        const EdgeInsets.only(right: 0),
-                                        child: Icon(
-                                          Icons.more_vert_outlined,
+                              Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: MediaQuery
+                                        .of(this.context)
+                                        .size
+                                        .width /
+                                        2.3,
+                                    child: Text(
+                                      Fiberchat.getNickname(peer!)!,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
                                           color: DESIGN_TYPE ==
                                               Themetype.whatsapp
                                               ? fiberchatWhite
                                               : fiberchatBlack,
-                                        ),
-                                      ),
-                                      color: fiberchatWhite,
-                                      onSelected: (dynamic val) {
-                                        switch (val) {
-                                          case 'hide':
-                                            ChatController.hideChat(
-                                                currentUserNo, peerNo);
-                                            break;
-                                          case 'unhide':
-                                            ChatController.unhideChat(
-                                                currentUserNo, peerNo);
-                                            break;
-                                          case 'lock':
-                                            if (widget.prefs.getString(Dbkeys
-                                                .isPINsetDone) !=
-                                                currentUserNo ||
-                                                widget.prefs.getString(Dbkeys
-                                                    .isPINsetDone) ==
-                                                    null) {
-                                              unawaited(Navigator.push(
-                                                  this.context,
-                                                  MaterialPageRoute(
-                                                      builder:
-                                                          (context) =>
-                                                          Security(
-                                                            currentUserNo,
-                                                            prefs: widget
-                                                                .prefs,
-                                                            setPasscode:
-                                                            true,
-                                                            onSuccess:
-                                                                (
-                                                                newContext) async {
-                                                              ChatController
-                                                                  .lockChat(
-                                                                  currentUserNo,
-                                                                  peerNo);
-                                                              Navigator.pop(
-                                                                  context);
-                                                              Navigator.pop(
-                                                                  context);
-                                                            },
-                                                            title: getTranslated(
-                                                                this.context,
-                                                                'authh'),
-                                                          ))));
-                                            } else {
-                                              ChatController.lockChat(
-                                                  currentUserNo, peerNo);
-                                              Navigator.pop(context);
-                                            }
-                                            break;
-                                          case 'unlock':
-                                            ChatController.unlockChat(
-                                                currentUserNo, peerNo);
-                                            break;
-                                          case 'block':
-                                          // if (hasPeerBlockedMe == true) {
-                                          //   Fiberchat.toast(
-                                          //     getTranslated(context,
-                                          //         'userhasblocked'),
-                                          //   );
-                                          // } else {
-                                            ChatController.block(
-                                                currentUserNo, peerNo);
-                                            // }
-                                            break;
-                                          case 'unblock':
-                                          // if (hasPeerBlockedMe == true) {
-                                          //   Fiberchat.toast(
-                                          //     getTranslated(context,
-                                          //         'userhasblocked'),
-                                          //   );
-                                          // } else {
-                                            ChatController.accept(
-                                                currentUserNo, peerNo);
-                                            Fiberchat.toast(getTranslated(
-                                                this.context, 'unblocked'));
-                                            // }
-
-                                            break;
-                                          case 'tutorial':
-                                            Fiberchat.toast(getTranslated(
-                                                this.context, 'vsmsg'));
-
-                                            break;
-                                          case 'remove_wallpaper':
-                                            _cachedModel
-                                                .removeWallpaper(peerNo!);
-                                            // Fiberchat.toast('Wallpaper removed.');
-                                            break;
-                                          case 'set_wallpaper':
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        SingleImagePicker(
-                                                          title: getTranslated(
-                                                              this.context,
-                                                              'pickimage'),
-                                                          callback:
-                                                          getWallpaper,
-                                                        )));
-                                            break;
-                                        }
-                                      },
-                                      itemBuilder: ((context) =>
-                                          <PopupMenuItem<String>>[
-                                            PopupMenuItem<String>(
-                                              value:
-                                              hidden ? 'unhide' : 'hide',
-                                              child: Text(
-                                                '${hidden
-                                                    ? getTranslated(
-                                                    this.context, 'unhidechat')
-                                                    : getTranslated(
-                                                    this.context, 'hidechat')}',
-                                              ),
-                                            ),
-                                            PopupMenuItem<String>(
-                                              value:
-                                              locked ? 'unlock' : 'lock',
-                                              child: Text(
-                                                  '${locked
-                                                      ? getTranslated(
-                                                      this.context,
-                                                      'unlockchat')
-                                                      : getTranslated(
-                                                      this.context,
-                                                      'lockchat')}'),
-                                            ),
-                                            PopupMenuItem<String>(
-                                              value: isBlocked()
-                                                  ? 'unblock'
-                                                  : 'block',
-                                              child: Text(
-                                                  '${isBlocked()
-                                                      ? getTranslated(
-                                                      this.context,
-                                                      'unblockchat')
-                                                      : getTranslated(
-                                                      this.context,
-                                                      'blockchat')}'),
-                                            ),
-                                            peer![Dbkeys.wallpaper] != null
-                                                ? PopupMenuItem<String>(
-                                                value: 'remove_wallpaper',
-                                                child: Text(getTranslated(
-                                                    this.context,
-                                                    'removewall')))
-                                                : PopupMenuItem<String>(
-                                                value: 'set_wallpaper',
-                                                child: Text(getTranslated(
-                                                    this.context,
-                                                    'setwall'))),
-
-                                            // ignore: unnecessary_null_comparison
-                                          ].toList())),
+                                          fontSize: 17.0,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 4,
+                                  ),
+                                  chatId != null
+                                      ? Text(
+                                    getPeerStatus(
+                                        peer![Dbkeys.lastSeen]),
+                                    style: TextStyle(
+                                        color: DESIGN_TYPE ==
+                                            Themetype.whatsapp
+                                            ? fiberchatWhite
+                                            : fiberchatGrey,
+                                        fontSize: 12,
+                                        fontWeight:
+                                        FontWeight.w400),
+                                  )
+                                      : Text(
+                                    'loading…',
+                                    style: TextStyle(
+                                        color: DESIGN_TYPE ==
+                                            Themetype.whatsapp
+                                            ? fiberchatWhite
+                                            : fiberchatGrey,
+                                        fontSize: 12,
+                                        fontWeight:
+                                        FontWeight.w400),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          observer.isCallFeatureTotallyHide == true
+                              ? SizedBox()
+                              : SizedBox(
+                            width: 35,
+                            child: IconButton(
+                                icon: Icon(
+                                  Icons.video_call,
+                                  color: DESIGN_TYPE ==
+                                      Themetype.whatsapp
+                                      ? fiberchatWhite
+                                      : fiberchatgreen,
                                 ),
-                              ],
-                            ),
-                            body: Stack(
-                              children: <Widget>[
-                                new Container(
-                                  decoration: new BoxDecoration(
-                                    color: DESIGN_TYPE == Themetype.whatsapp
-                                        ? fiberchatChatbackground
-                                        : fiberchatWhite,
-                                    image: new DecorationImage(
-                                        image: peer![Dbkeys.wallpaper] == null
-                                            ? AssetImage(
-                                            "assets/images/background.png")
-                                            : Image
-                                            .file(File(
-                                            peer![Dbkeys.wallpaper]))
-                                            .image,
-                                        fit: BoxFit.cover),
+                                onPressed: observer
+                                    .iscallsallowed ==
+                                    false
+                                    ? () {
+                                  Fiberchat.showRationale(
+                                      getTranslated(
+                                          this.context,
+                                          'callnotallowed'));
+                                }
+                                    : hasPeerBlockedMe == true
+                                    ? () {
+                                  Fiberchat.toast(
+                                    getTranslated(
+                                        context,
+                                        'userhasblocked'),
+                                  );
+                                }
+                                    : () async {
+                                  final observer =
+                                  Provider.of<
+                                      Observer>(
+                                      this.context,
+                                      listen:
+                                      false);
+                                  if (IsInterstitialAdShow ==
+                                      true &&
+                                      observer.isadmobshow ==
+                                          true) {}
+
+                                  await Permissions
+                                      .cameraAndMicrophonePermissionsGranted()
+                                      .then(
+                                          (isgranted) {
+                                        if (isgranted ==
+                                            true) {
+                                          call(context,
+                                              true);
+                                        } else {
+                                          Fiberchat.showRationale(
+                                              getTranslated(
+                                                  this.context,
+                                                  'pmc'));
+                                          Navigator.push(
+                                              context,
+                                              new MaterialPageRoute(
+                                                  builder:
+                                                      (context) =>
+                                                      OpenSettings()));
+                                        }
+                                      }).catchError(
+                                          (onError) {
+                                        Fiberchat.showRationale(
+                                            getTranslated(
+                                                this.context,
+                                                'pmc'));
+                                        Navigator.push(
+                                            context,
+                                            new MaterialPageRoute(
+                                                builder:
+                                                    (context) =>
+                                                    OpenSettings()));
+                                      });
+                                }),
+                          ),
+                          observer.isCallFeatureTotallyHide == true
+                              ? SizedBox()
+                              : SizedBox(
+                            width: 55,
+                            child: IconButton(
+                                icon: Icon(
+                                  Icons.phone,
+                                  color: DESIGN_TYPE ==
+                                      Themetype.whatsapp
+                                      ? fiberchatWhite
+                                      : fiberchatgreen,
+                                ),
+                                onPressed: observer
+                                    .iscallsallowed ==
+                                    false
+                                    ? () {
+                                  print('z');
+                                  Fiberchat.showRationale(
+                                      getTranslated(
+                                          this.context,
+                                          'callnotallowed'));
+                                }
+                                    : hasPeerBlockedMe == true
+                                    ? () {
+                                  print('zhh');
+                                  Fiberchat.toast(
+                                    getTranslated(
+                                        context,
+                                        'userhasblocked'),
+                                  );
+                                }
+                                    : () async {
+                                  print('ll');
+                                  final observer =
+                                  Provider.of<
+                                      Observer>(
+                                      this.context,
+                                      listen:
+                                      false);
+                                  if (IsInterstitialAdShow ==
+                                      true &&
+                                      observer.isadmobshow ==
+                                          true) {}
+
+                                  await Permissions
+                                      .cameraAndMicrophonePermissionsGranted()
+                                      .then(
+                                          (isgranted) {
+                                        print('ww');
+                                        if (isgranted ==
+                                            true) {
+                                          call(context,
+                                              false);
+                                        } else {
+                                          Fiberchat.showRationale(
+                                              getTranslated(
+                                                  this.context,
+                                                  'pmc'));
+                                          Navigator.push(
+                                              context,
+                                              new MaterialPageRoute(
+                                                  builder:
+                                                      (context) =>
+                                                      OpenSettings()));
+                                        }
+                                      }).catchError(
+                                          (onError) {
+                                        Fiberchat.showRationale(
+                                            getTranslated(
+                                                this.context,
+                                                'pmc'));
+                                        Navigator.push(
+                                            context,
+                                            new MaterialPageRoute(
+                                                builder:
+                                                    (context) =>
+                                                    OpenSettings()));
+                                      });
+                                }),
+                          ),
+                          SizedBox(
+                            width: observer.isCallFeatureTotallyHide ==
+                                true
+                                ? 45
+                                : 25,
+                            child: PopupMenuButton(
+                                padding: EdgeInsets.all(0),
+                                icon: Padding(
+                                  padding:
+                                  const EdgeInsets.only(right: 0),
+                                  child: Icon(
+                                    Icons.more_vert_outlined,
+                                    color: DESIGN_TYPE ==
+                                        Themetype.whatsapp
+                                        ? fiberchatWhite
+                                        : fiberchatBlack,
                                   ),
                                 ),
-                                PageView(
-                                  children: <Widget>[
-                                    Column(
-                                      children: [
-                                        // List of messages
-
-                                        buildMessages(context),
-                                        // Input content
-                                        isBlocked()
-                                            ? AlertDialog(
-                                          backgroundColor: Colors.white,
-                                          elevation: 10.0,
-                                          title: Text(
-                                            getTranslated(this.context,
-                                                'unblock') +
-                                                ' ${peer![Dbkeys.nickname]}?',
-                                            style: TextStyle(
-                                                color: fiberchatBlack),
-                                          ),
-                                          actions: <Widget>[
-                                            myElevatedButton(
-                                                color: fiberchatWhite,
-                                                child: Text(
-                                                  getTranslated(
-                                                      this.context,
-                                                      'cancel'),
-                                                  style: TextStyle(
-                                                      color:
-                                                      fiberchatBlack),
-                                                ),
-                                                onPressed: () {
-                                                  Navigator.pop(
-                                                      context);
-                                                }),
-                                            myElevatedButton(
-                                                color:
-                                                fiberchatLightGreen,
-                                                child: Text(
-                                                  getTranslated(
-                                                      this.context,
-                                                      'unblock'),
-                                                  style: TextStyle(
-                                                      color:
-                                                      fiberchatWhite),
-                                                ),
-                                                onPressed: () {
-                                                  ChatController.accept(
+                                color: fiberchatWhite,
+                                onSelected: (dynamic val) {
+                                  switch (val) {
+                                    case 'hide':
+                                      ChatController.hideChat(
+                                          currentUserNo, peerNo);
+                                      break;
+                                    case 'unhide':
+                                      ChatController.unhideChat(
+                                          currentUserNo, peerNo);
+                                      break;
+                                    case 'lock':
+                                      if (widget.prefs.getString(Dbkeys
+                                          .isPINsetDone) !=
+                                          currentUserNo ||
+                                          widget.prefs.getString(Dbkeys
+                                              .isPINsetDone) ==
+                                              null) {
+                                        unawaited(Navigator.push(
+                                            this.context,
+                                            MaterialPageRoute(
+                                                builder:
+                                                    (context) =>
+                                                    Security(
                                                       currentUserNo,
-                                                      peerNo);
-                                                  setStateIfMounted(() {
-                                                    chatStatus =
-                                                        ChatStatus
-                                                            .accepted
-                                                            .index;
-                                                  });
-                                                })
-                                          ],
-                                        )
-                                            : hasPeerBlockedMe == true
-                                            ? Container(
-                                          alignment:
-                                          Alignment.center,
-                                          padding:
-                                          EdgeInsets.fromLTRB(
-                                              14, 7, 14, 7),
-                                          color: Colors.white
-                                              .withOpacity(0.3),
-                                          height: 50,
-                                          width:
-                                          MediaQuery
-                                              .of(context)
-                                              .size
-                                              .width,
-                                          child: Row(
-                                            mainAxisSize:
-                                            MainAxisSize.min,
-                                            mainAxisAlignment:
-                                            MainAxisAlignment
-                                                .center,
-                                            children: [
-                                              Icon(
-                                                  Icons
-                                                      .error_outline_rounded,
-                                                  color:
-                                                  Colors.red),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                getTranslated(
-                                                    context,
-                                                    'userhasblocked'),
-                                                textAlign: TextAlign
-                                                    .center,
-                                                style: TextStyle(
-                                                    height: 1.3),
-                                              ),
-                                            ],
+                                                      prefs: widget
+                                                          .prefs,
+                                                      setPasscode:
+                                                      true,
+                                                      onSuccess:
+                                                          (newContext) async {
+                                                        ChatController
+                                                            .lockChat(
+                                                            currentUserNo,
+                                                            peerNo);
+                                                        Navigator.pop(
+                                                            context);
+                                                        Navigator.pop(
+                                                            context);
+                                                      },
+                                                      title: getTranslated(
+                                                          this.context,
+                                                          'authh'),
+                                                    ))));
+                                      } else {
+                                        ChatController.lockChat(
+                                            currentUserNo, peerNo);
+                                        Navigator.pop(context);
+                                      }
+                                      break;
+                                    case 'unlock':
+                                      ChatController.unlockChat(
+                                          currentUserNo, peerNo);
+                                      break;
+                                    case 'block':
+                                    // if (hasPeerBlockedMe == true) {
+                                    //   Fiberchat.toast(
+                                    //     getTranslated(context,
+                                    //         'userhasblocked'),
+                                    //   );
+                                    // } else {
+                                      ChatController.block(
+                                          currentUserNo, peerNo);
+                                      // }
+                                      break;
+                                    case 'unblock':
+                                    // if (hasPeerBlockedMe == true) {
+                                    //   Fiberchat.toast(
+                                    //     getTranslated(context,
+                                    //         'userhasblocked'),
+                                    //   );
+                                    // } else {
+                                      ChatController.accept(
+                                          currentUserNo, peerNo);
+                                      Fiberchat.toast(getTranslated(
+                                          this.context, 'unblocked'));
+                                      // }
+
+                                      break;
+                                    case 'tutorial':
+                                      Fiberchat.toast(getTranslated(
+                                          this.context, 'vsmsg'));
+
+                                      break;
+                                    case 'remove_wallpaper':
+                                      _cachedModel
+                                          .removeWallpaper(peerNo!);
+                                      // Fiberchat.toast('Wallpaper removed.');
+                                      break;
+                                    case 'set_wallpaper':
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  SingleImagePicker(
+                                                    title: getTranslated(
+                                                        this.context,
+                                                        'pickimage'),
+                                                    callback:
+                                                    getWallpaper,
+                                                  )));
+                                      break;
+                                  }
+                                },
+                                itemBuilder: ((context) =>
+                                    <PopupMenuItem<String>>[
+                                      PopupMenuItem<String>(
+                                        value:
+                                        hidden ? 'unhide' : 'hide',
+                                        child: Text(
+                                          '${hidden
+                                              ? getTranslated(
+                                              this.context, 'unhidechat')
+                                              : getTranslated(
+                                              this.context, 'hidechat')}',
+                                        ),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        value:
+                                        locked ? 'unlock' : 'lock',
+                                        child: Text(
+                                            '${locked
+                                                ? getTranslated(
+                                                this.context,
+                                                'unlockchat')
+                                                : getTranslated(
+                                                this.context,
+                                                'lockchat')}'),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        value: isBlocked()
+                                            ? 'unblock'
+                                            : 'block',
+                                        child: Text(
+                                            '${isBlocked()
+                                                ? getTranslated(
+                                                this.context,
+                                                'unblockchat')
+                                                : getTranslated(
+                                                this.context,
+                                                'blockchat')}'),
+                                      ),
+                                      peer![Dbkeys.wallpaper] != null
+                                          ? PopupMenuItem<String>(
+                                          value: 'remove_wallpaper',
+                                          child: Text(getTranslated(
+                                              this.context,
+                                              'removewall')))
+                                          : PopupMenuItem<String>(
+                                          value: 'set_wallpaper',
+                                          child: Text(getTranslated(
+                                              this.context,
+                                              'setwall'))),
+
+                                      // ignore: unnecessary_null_comparison
+                                    ].toList())),
+                          ),
+                        ],
+                      ),
+                      body: Stack(
+                        children: <Widget>[
+                          new Container(
+                            decoration: new BoxDecoration(
+                              color: DESIGN_TYPE == Themetype.whatsapp
+                                  ? fiberchatChatbackground
+                                  : fiberchatWhite,
+                              image: new DecorationImage(
+                                  image: peer![Dbkeys.wallpaper] == null
+                                      ? AssetImage(
+                                      "assets/images/background.png")
+                                      : Image
+                                      .file(File(
+                                      peer![Dbkeys.wallpaper]))
+                                      .image,
+                                  fit: BoxFit.cover),
+                            ),
+                          ),
+                          PageView(
+                            children: <Widget>[
+                              Column(
+                                children: [
+                                  // List of messages
+
+                                  buildMessages(context),
+                                  // Input content
+                                  isBlocked()
+                                      ? AlertDialog(
+                                    backgroundColor: Colors.white,
+                                    elevation: 10.0,
+                                    title: Text(
+                                      getTranslated(this.context,
+                                          'unblock') +
+                                          ' ${peer![Dbkeys.nickname]}?',
+                                      style: TextStyle(
+                                          color: fiberchatBlack),
+                                    ),
+                                    actions: <Widget>[
+                                      myElevatedButton(
+                                          color: fiberchatWhite,
+                                          child: Text(
+                                            getTranslated(
+                                                this.context,
+                                                'cancel'),
+                                            style: TextStyle(
+                                                color:
+                                                fiberchatBlack),
                                           ),
-                                        )
-                                            : buildInputAndroid(
-                                            context,
-                                            isemojiShowing,
-                                            refreshInput,
-                                            _keyboardVisible)
+                                          onPressed: () {
+                                            Navigator.pop(
+                                                context);
+                                          }),
+                                      myElevatedButton(
+                                          color:
+                                          fiberchatLightGreen,
+                                          child: Text(
+                                            getTranslated(
+                                                this.context,
+                                                'unblock'),
+                                            style: TextStyle(
+                                                color:
+                                                fiberchatWhite),
+                                          ),
+                                          onPressed: () {
+                                            ChatController.accept(
+                                                currentUserNo,
+                                                peerNo);
+                                            setStateIfMounted(() {
+                                              chatStatus =
+                                                  ChatStatus
+                                                      .accepted
+                                                      .index;
+                                            });
+                                          })
+                                    ],
+                                  )
+                                      : hasPeerBlockedMe == true
+                                      ? Container(
+                                    alignment:
+                                    Alignment.center,
+                                    padding:
+                                    EdgeInsets.fromLTRB(
+                                        14, 7, 14, 7),
+                                    color: Colors.white
+                                        .withOpacity(0.3),
+                                    height: 50,
+                                    width:
+                                    MediaQuery
+                                        .of(context)
+                                        .size
+                                        .width,
+                                    child: Row(
+                                      mainAxisSize:
+                                      MainAxisSize.min,
+                                      mainAxisAlignment:
+                                      MainAxisAlignment
+                                          .center,
+                                      children: [
+                                        Icon(
+                                            Icons
+                                                .error_outline_rounded,
+                                            color:
+                                            Colors.red),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          getTranslated(
+                                              context,
+                                              'userhasblocked'),
+                                          textAlign: TextAlign
+                                              .center,
+                                          style: TextStyle(
+                                              height: 1.3),
+                                        ),
                                       ],
                                     ),
-                                    // Column(
-                                    //   children: [
-                                    //     // List of saved messages
-                                    //     buildSavedMessages(context)
-                                    //   ],
-                                    // ),
-                                  ],
-                                ),
+                                  )
+                                      : buildInputAndroid(
+                                      context,
+                                      isemojiShowing,
+                                      refreshInput,
+                                      _keyboardVisible)
+                                ],
+                              ),
+                              // Column(
+                              //   children: [
+                              //     // List of saved messages
+                              //     buildSavedMessages(context)
+                              //   ],
+                              // ),
+                            ],
+                          ),
 
-                                // Loading
-                                buildLoading()
-                              ],
-                            )),
-                        buildLoadingThumbnail(),
-                      ],
-                    )
-                        : Container();
-                  })))),
+                          // Loading
+                          buildLoading()
+                        ],
+                      )),
+                  buildLoadingThumbnail(),
+                ],
+              )
+                  : Container();
+            },),),),),
     );
   }
 }
