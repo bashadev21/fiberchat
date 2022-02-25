@@ -1,6 +1,7 @@
 //*************   © Copyrighted by Thinkcreative_Technologies. An Exclusive item of Envato market. Make sure you have purchased a Regular License OR Extended license for the Source Code from Envato to use this product. See the License Defination attached with source code. *********************
 
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -145,10 +146,10 @@ class UserProvider with ChangeNotifier {
 
       // this.verificationId = verificationId;
     };
-
+log("(phoneCode! + usermobile.text).trim()  ==>  ${(phoneCode! + usermobile.text).trim()}");
     await firebaseAuth.verifyPhoneNumber(
         phoneNumber: (phoneCode! + usermobile.text).trim(),
-        // timeout: const Duration(seconds: 30),
+        timeout: const Duration(seconds: 60),
         verificationCompleted: verificationCompleted,
         verificationFailed: verificationFailed,
         codeSent: codeSent,
@@ -233,6 +234,7 @@ class UserProvider with ChangeNotifier {
     AuthCredential credential;
     print(
         "verificationId ==>   $verificationId \n\n$codeverify \n\n $authCredential");
+    await firebaseAuth.signOut();
     if (authCredential == null)
       credential = PhoneAuthProvider.credential(
         verificationId: verificationId!,
@@ -241,10 +243,10 @@ class UserProvider with ChangeNotifier {
     else
       credential = authCredential;
     UserCredential firebaseUser;
-    await firebaseAuth.signOut();
     firebaseUser = await firebaseAuth
         .signInWithCredential(credential)
         .catchError((err) async {
+          log("error  ==>  $err");
       if (err == null) {
       } else {
         if (err.toString().contains('return a value') ||

@@ -2,6 +2,7 @@
 
 import 'package:fiberchat/Configs/Dbkeys.dart';
 import 'package:fiberchat/Configs/app_constants.dart';
+import 'package:fiberchat/Screens/chat_screen/chat.dart';
 import 'package:fiberchat/Services/Providers/seen_provider.dart';
 import 'package:fiberchat/Services/localization/language_constants.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,9 @@ class Bubble extends StatelessWidget {
     this.isBroadcastMssg,
     required this.isMssgDeleted,
     required this.is24hrsFormat,
+    required this.isMsgStar,
     required this.mssgDoc,
+    required this.refresh,
   });
 
   final dynamic messagetype;
@@ -29,7 +32,9 @@ class Bubble extends StatelessWidget {
   final bool isMe, isContinuing, isMssgDeleted;
   final bool? isBroadcastMssg;
   final bool is24hrsFormat;
+  final bool isMsgStar;
   final Map<String, dynamic> mssgDoc;
+  final Function refresh;
 
   humanReadableTime() => DateFormat(is24hrsFormat == true ? 'HH:mm' : 'h:mm a')
       .format(DateTime.fromMillisecondsSinceEpoch(timestamp!));
@@ -90,109 +95,163 @@ class Bubble extends StatelessWidget {
         child: Column(
       crossAxisAlignment: align,
       children: <Widget>[
-        Container(
-          margin: margin,
-          padding: const EdgeInsets.all(8.0),
-          constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.67),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: radius,
-          ),
-          child: Stack(
-            children: <Widget>[
-              isMssgDeleted == true
-                  ? deletedMessageWidget(
-                      isMe, isBroadcastMssg, context, is24hrsFormat)
-                  : Padding(
-                      padding: this.messagetype == null ||
-                              this.messagetype == MessageType.location ||
-                              this.messagetype == MessageType.image ||
-                              this.messagetype == MessageType.text
-                          ? child is Container ||
-                                  mssgDoc.containsKey(Dbkeys.isReply) == true
-                              ? mssgDoc[Dbkeys.isReply] == true ||
-                                      child is Container
-                                  ? EdgeInsets.fromLTRB(0, 0, 0, 17)
-                                  : EdgeInsets.only(
-                                      right: this.messagetype ==
-                                              MessageType.location
-                                          ? 0
-                                          : isMe
-                                              ? isBroadcastMssg == null ||
-                                                      isBroadcastMssg == false
-                                                  ? is24hrsFormat
-                                                      ? 45
-                                                      : 65
-                                                  : is24hrsFormat
-                                                      ? 62
-                                                      : 81.0
-                                              : isBroadcastMssg == null ||
-                                                      isBroadcastMssg == false
-                                                  ? is24hrsFormat
-                                                      ? 33
-                                                      : 48
-                                                  : is24hrsFormat
-                                                      ? 48
-                                                      : 60.0)
-                              : EdgeInsets.only(
-                                  right:
-                                      this.messagetype == MessageType.location
-                                          ? 0
-                                          : isMe
-                                              ? isBroadcastMssg == null ||
-                                                      isBroadcastMssg == false
-                                                  ? is24hrsFormat
-                                                      ? 45
-                                                      : 65
-                                                  : is24hrsFormat
-                                                      ? 62
-                                                      : 81.0
-                                              : isBroadcastMssg == null ||
-                                                      isBroadcastMssg == false
-                                                  ? is24hrsFormat
-                                                      ? 33
-                                                      : 48
-                                                  : is24hrsFormat
-                                                      ? 48
-                                                      : 60.0)
-                          : child is Container
-                              ? EdgeInsets.all(0.0)
-                              : EdgeInsets.only(right: 5.0, bottom: 20),
-                      child: child),
-              Positioned(
-                bottom: 0.0,
-                right: 0.0,
-                child: Row(
-                    children: <Widget>[
-                  isBroadcastMssg == null || isBroadcastMssg == false
-                      ? Container(
-                          height: 0,
-                          width: 0,
-                        )
-                      : Padding(
-                          padding: EdgeInsets.fromLTRB(3, 0, 3, 0),
-                          child: Icon(
-                            Icons.campaign,
-                            size: 14.3,
-                            color: color,
-                          ),
-                        ),
-                  Text(humanReadableTime().toString() + (isMe ? ' ' : ''),
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 10.0,
-                      )),
-
-                  isMe ? icon : SizedBox()
-                  // ignore: unnecessary_null_comparison
-                ].where((o) => o != null).toList()),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (align == CrossAxisAlignment.start) _selectedMessage(),
+            Container(
+              margin: margin,
+              padding: const EdgeInsets.all(8.0),
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.67),
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: radius,
               ),
-            ],
-          ),
+              child: Stack(
+                children: <Widget>[
+                  isMssgDeleted == true
+                      ? deletedMessageWidget(
+                          isMe, isBroadcastMssg, context, is24hrsFormat)
+                      : Padding(
+                          padding: this.messagetype == null ||
+                                  this.messagetype == MessageType.location ||
+                                  this.messagetype == MessageType.image ||
+                                  this.messagetype == MessageType.text
+                              ? child is Container ||
+                                      mssgDoc.containsKey(Dbkeys.isReply) ==
+                                          true
+                                  ? mssgDoc[Dbkeys.isReply] == true ||
+                                          child is Container
+                                      ? EdgeInsets.fromLTRB(0, 0, 0, 17)
+                                      : EdgeInsets.only(
+                                          right: (this.messagetype ==
+                                                      MessageType.location
+                                                  ? 0
+                                                  : isMe
+                                                      ? isBroadcastMssg ==
+                                                                  null ||
+                                                              isBroadcastMssg ==
+                                                                  false
+                                                          ? is24hrsFormat
+                                                              ? 45
+                                                              : 65
+                                                          : is24hrsFormat
+                                                              ? 62
+                                                              : 81.0
+                                                      : isBroadcastMssg ==
+                                                                  null ||
+                                                              isBroadcastMssg ==
+                                                                  false
+                                                          ? is24hrsFormat
+                                                              ? 33
+                                                              : 48
+                                                          : is24hrsFormat
+                                                              ? 48
+                                                              : 60.0) +
+                                              (isMsgStar ? 20 : 0))
+                                  : EdgeInsets.only(
+                                      right: (this.messagetype ==
+                                                  MessageType.location
+                                              ? 0
+                                              : isMe
+                                                  ? isBroadcastMssg == null ||
+                                                          isBroadcastMssg ==
+                                                              false
+                                                      ? is24hrsFormat
+                                                          ? 45
+                                                          : 65
+                                                      : is24hrsFormat
+                                                          ? 62
+                                                          : 81.0
+                                                  : isBroadcastMssg == null ||
+                                                          isBroadcastMssg ==
+                                                              false
+                                                      ? is24hrsFormat
+                                                          ? 33
+                                                          : 48
+                                                      : is24hrsFormat
+                                                          ? 48
+                                                          : 60.0) +
+                                          (isMsgStar ? 0 : 0))
+                              : child is Container
+                                  ? EdgeInsets.all(0.0)
+                                  : EdgeInsets.only(right: 5.0, bottom: 20),
+                          child: child),
+                  Positioned(
+                    bottom: 0.0,
+                    right: 0.0,
+                    child: Row(
+                        children: <Widget>[
+                      isBroadcastMssg == null || isBroadcastMssg == false
+                          ? Container(
+                              height: 0,
+                              width: 0,
+                            )
+                          : Padding(
+                              padding: EdgeInsets.fromLTRB(3, 0, 3, 0),
+                              child: Icon(
+                                Icons.campaign,
+                                size: 14.3,
+                                color: color,
+                              ),
+                            ),
+                      if (isMsgStar)
+                        Icon(
+                          Icons.star,
+                          size: 18,
+                        ),
+                      Text(humanReadableTime().toString() + (isMe ? ' ' : ''),
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 10.0,
+                          )),
+                      isMe ? icon : SizedBox()
+                      // ignore: unnecessary_null_comparison
+                    ].where((o) => o != null).toList()),
+                  ),
+                ],
+              ),
+            ),
+            if (align == CrossAxisAlignment.end) _selectedMessage()
+          ],
         )
       ],
     ));
+  }
+
+  Widget _selectedMessage() {
+    if (selectedMessageDocs.isNotEmpty) {
+      return InkWell(
+      onTap: (){
+        if(selectedMessageDocs.contains(mssgDoc)){
+          selectedMessageDocs.remove(mssgDoc);
+        }else{
+          selectedMessageDocs.add(mssgDoc);
+        }
+        refresh();
+      },
+        child: Padding(
+          padding: EdgeInsets.only(left: 5, right: 5, bottom: 5),
+          child: !selectedMessageDocs.contains(mssgDoc)
+              ? Container(
+                  width: 24,
+                  height: 24,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.blue, width: 2)))
+              : Icon(
+                Icons.check_circle,
+                size: 24,
+                color: Colors.blue,
+              ),
+        ),
+      );
+    } else {
+      return SizedBox(width: 0, height: 0);
+    }
   }
 }
 

@@ -1,7 +1,9 @@
 //*************   © Copyrighted by Thinkcreative_Technologies. An Exclusive item of Envato market. Make sure you have purchased a Regular License OR Extended license for the Source Code from Envato to use this product. See the License Defination attached with source code. *********************
 
+import 'dart:convert';
 import 'dart:core';
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 import 'package:async/async.dart' show StreamGroup;
 import 'package:fiberchat/Configs/Dbkeys.dart';
@@ -160,6 +162,7 @@ class DataModel extends Model {
                   .doc(_data.key)
                   .snapshots());
               if (userData[_data.key] != null) {
+                log("message ==> 12344 data 1233  ${_chatsWith[_data.key]}");
                 userData[_data.key]![Dbkeys.chatStatus] = _chatsWith[_data.key];
               }
             });
@@ -179,6 +182,7 @@ class DataModel extends Model {
                   newData[user[Dbkeys.phone]]!.addAll(_stored);
                 }
               }
+              log("message  ==>  ${newData}");
               userData = Map.from(newData);
               notifyListeners();
             });

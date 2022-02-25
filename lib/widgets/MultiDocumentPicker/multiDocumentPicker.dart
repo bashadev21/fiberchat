@@ -76,7 +76,7 @@ class _MultiDocumentPickerState extends State<MultiDocumentPicker> {
 
     try {
       FilePickerResult? files = await FilePicker.platform
-          .pickFiles(type: FileType.any, allowMultiple: true);
+          .pickFiles(type: FileType.any, lockParentWindow: true, allowMultiple: true);
 
       if (files != null) {
         if (files.files.length > 1) {

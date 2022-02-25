@@ -23,6 +23,7 @@ import 'package:fiberchat/Services/Providers/AvailableContactsProvider.dart';
 import 'package:fiberchat/Services/Providers/Observer.dart';
 import 'package:fiberchat/Services/Providers/StatusProvider.dart';
 import 'package:fiberchat/Services/Providers/call_history_provider.dart';
+import 'package:fiberchat/Utils/app_constants.dart';
 import 'package:fiberchat/Utils/phonenumberVariantsGenerator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
@@ -58,6 +59,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fiberchat/Configs/Enum.dart';
 import 'package:fiberchat/Utils/unawaited.dart';
 
+List<String> selectedUser = [];
+List<String> pinUserList = [];
+
 // ignore: must_be_immutable
 class Homepage extends StatefulWidget {
   Homepage(
@@ -71,6 +75,7 @@ class Homepage extends StatefulWidget {
   final bool isSecuritySetupDone;
   final SharedPreferences prefs;
   var currentindex;
+
   @override
   State createState() => new HomepageState(currentUserNo: this.currentUserNo);
 }
@@ -85,16 +90,20 @@ class HomepageState extends State<Homepage>
       _userQuery.add(_filter.text.isEmpty ? '' : _filter.text);
     });
   }
+
   TabController? controllerIfcallallowed;
   TabController? controllerIfcallNotallowed;
   late StreamSubscription _intentDataStreamSubscription;
   List<SharedMediaFile>? _sharedFiles = [];
   String? _sharedText;
+
   @override
   bool get wantKeepAlive => true;
 
   bool isFetching = true;
   List phoneNumberVariants = [];
+  bool _isShowPinUnpinBtn = false;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed)
@@ -148,6 +157,7 @@ class HomepageState extends State<Homepage>
   String? userPhotourl;
   String? userFullname;
   String? joinedList;
+
   @override
   void initState() {
     listenToSharingintent();
@@ -156,7 +166,6 @@ class HomepageState extends State<Homepage>
     getSignedInUserOrRedirect();
     setdeviceinfo();
     registerNotification();
-
     controllerIfcallallowed = TabController(length: 4, vsync: this);
     controllerIfcallallowed!.index = 1;
     controllerIfcallNotallowed = TabController(length: 3, vsync: this);
@@ -170,6 +179,7 @@ class HomepageState extends State<Homepage>
     });
     getModel();
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      setPinChatList();
       controllerIfcallallowed!.addListener(() {
         if (controllerIfcallallowed!.index == 2) {
           final statusProvider =
@@ -191,6 +201,14 @@ class HomepageState extends State<Homepage>
         }
       });
     });
+  }
+
+  void setPinChatList() {
+    List<String>? userData = sharedPreferences.getStringList(Dbkeys.pinChat);
+    if (userData != null) {
+      pinUserList = userData;
+      setState(() {});
+    }
   }
 
   // detectLocale() async {
@@ -1028,6 +1046,7 @@ class HomepageState extends State<Homepage>
 
   StreamController<String> _userQuery =
       new StreamController<String>.broadcast();
+
   // void _changeLanguage(Language language) async {
   //   Locale _locale = await setLocale(language.languageCode);
   //   FiberchatWrapper.setLocale(context, _locale);
@@ -1050,6 +1069,7 @@ class HomepageState extends State<Homepage>
   // }
 
   DateTime? currentBackPressTime = DateTime.now();
+
   Future<bool> onWillPop() {
     DateTime now = DateTime.now();
     if (now.difference(currentBackPressTime!) > Duration(seconds: 3)) {
@@ -1072,9 +1092,14 @@ class HomepageState extends State<Homepage>
     final observer = Provider.of<Observer>(context, listen: true);
     List<Widget> _widgetOptions = <Widget>[
       RecentChats(
-          prefs: widget.prefs,
-          currentUserNo: widget.currentUserNo,
-          isSecuritySetupDone: widget.isSecuritySetupDone),
+        prefs: widget.prefs,
+        isPinUnPinBtnShow: (va) {
+          _isShowPinUnpinBtn = va;
+          setState(() {});
+        },
+        currentUserNo: widget.currentUserNo,
+        isSecuritySetupDone: widget.isSecuritySetupDone,
+      ),
       Status(
           currentUserFullname: userFullname,
           currentUserPhotourl: userPhotourl,
@@ -1134,7 +1159,7 @@ class HomepageState extends State<Homepage>
             });
           }
         },
-        currentUserNo: currentUserNo!,
+        currentUserNo: "$currentUserNo",
         biometricEnabled: biometricEnabled,
         type: Fiberchat.getAuthenticationType(biometricEnabled, _cachedModel),
       )
@@ -1149,9 +1174,14 @@ class HomepageState extends State<Homepage>
           currentUserNo: widget.currentUserNo,
           isSecuritySetupDone: widget.isSecuritySetupDone),
       RecentChats(
-          prefs: widget.prefs,
-          currentUserNo: widget.currentUserNo,
-          isSecuritySetupDone: widget.isSecuritySetupDone),
+        prefs: widget.prefs,
+        currentUserNo: widget.currentUserNo,
+        isSecuritySetupDone: widget.isSecuritySetupDone,
+        isPinUnPinBtnShow: (va) {
+          _isShowPinUnpinBtn = va;
+          setState(() {});
+        },
+      ),
       Status(
           currentUserFullname: userFullname,
           currentUserPhotourl: userPhotourl,
@@ -1214,6 +1244,46 @@ class HomepageState extends State<Homepage>
                             // ),
                             titleSpacing: -5,
                             actions: <Widget>[
+                              if (_isShowPinUnpinBtn)...[
+                              InkWell(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 3),
+                                  child: Image.asset(AppImages.chatPin,width: 20,height: 20,
+                                    color: Colors.white,),
+                                ),
+                                onTap: () async {
+                                  selectedUser.forEach((element) {
+                                    if (!pinUserList.contains(element)) {
+                                      pinUserList.insert(0, element);
+                                    }
+                                  });
+                                  await sharedPreferences.setStringList(
+                                      Dbkeys.pinChat, pinUserList);
+                                  selectedUser.clear();
+                                  _isShowPinUnpinBtn = false;
+                                  setState(() {});
+                                },
+                              ),
+                              InkWell(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 3),
+                                  child: Image.asset(AppImages.chatUnPin,width: 38,height: 38,
+                                    color: Colors.white,),
+                                ),
+                                onTap: () async {
+                                  selectedUser.forEach((element) {
+                                    if (pinUserList.contains(element)) {
+                                      pinUserList.remove(element);
+                                    }
+                                  });
+                                  await sharedPreferences.setStringList(
+                                      Dbkeys.pinChat, pinUserList);
+                                  selectedUser.clear();
+                                  _isShowPinUnpinBtn = false;
+                                  setState(() {});
+                                },
+                              ),
+                              ],
                               PopupMenuButton(
                                   padding: EdgeInsets.all(0),
                                   icon: Padding(
@@ -1651,6 +1721,7 @@ Future<dynamic> myBackgroundMessageHandlerAndroid(RemoteMessage message) async {
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+
 Future _showNotificationWithDefaultSound(String? title, String? message,
     String? titleMultilang, String? bodyMultilang) async {
   if (Platform.isAndroid) {
@@ -1665,8 +1736,8 @@ Future _showNotificationWithDefaultSound(String? title, String? message,
   flutterLocalNotificationsPlugin.initialize(initializationSettings);
   var androidPlatformChannelSpecifics =
       title == 'Missed Call' || title == 'Call Ended'
-          ? local.AndroidNotificationDetails(
-              'channel_id', 'channel_name', channelDescription: 'channel_description',
+          ? local.AndroidNotificationDetails('channel_id', 'channel_name',
+              channelDescription: 'channel_description',
               importance: local.Importance.max,
               priority: local.Priority.high,
               sound: RawResourceAndroidNotificationSound('whistle2'),
@@ -1674,8 +1745,8 @@ Future _showNotificationWithDefaultSound(String? title, String? message,
               ongoing: true,
               visibility: NotificationVisibility.public,
               timeoutAfter: 28000)
-          : local.AndroidNotificationDetails(
-              'channel_id', 'channel_name', channelDescription: 'channel_description',
+          : local.AndroidNotificationDetails('channel_id', 'channel_name',
+              channelDescription: 'channel_description',
               sound: RawResourceAndroidNotificationSound('ringtone'),
               playSound: true,
               ongoing: true,

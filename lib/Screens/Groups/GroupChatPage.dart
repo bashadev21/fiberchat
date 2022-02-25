@@ -21,6 +21,7 @@ import 'package:fiberchat/Utils/utils.dart';
 import 'package:fiberchat/widgets/InfiniteList/InfiniteCOLLECTIONListViewWidget.dart';
 import 'package:fiberchat/widgets/MultiDocumentPicker/multiDocumentPicker.dart';
 import 'package:fiberchat/widgets/MultiImagePicker/multiImagePicker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -3763,28 +3764,44 @@ class _GroupChatPageState extends State<GroupChatPage>
                       children: [
                         RawMaterialButton(
                           disabledElevation: 0,
-                          onPressed: () {
-                            hidekeyboard(context);
+                          onPressed: () async {
+                            // hidekeyboard(context);
+                            //
+                            // Navigator.of(context).pop();
+                            // Navigator.push(
+                            //     context,
+                            //     MaterialPageRoute(
+                            //         builder: (context) => AudioRecord(
+                            //               title: getTranslated(
+                            //                   this.context, 'record'),
+                            //               callback: getFileData,
+                            //             ))).then((url) {
+                            //   if (url != null) {
+                            //     onSendMessage(
+                            //       context: this.context,
+                            //       content: url +
+                            //           '-BREAK-' +
+                            //           uploadTimestamp.toString(),
+                            //       type: MessageType.audio,
+                            //     );
+                            //   } else {}
+                            // });
+                            Navigator.pop(context);
+                            FilePickerResult? result = await FilePicker.platform
+                                .pickFiles(
+                                type: FileType.audio);
 
-                            Navigator.of(context).pop();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => AudioRecord(
-                                          title: getTranslated(
-                                              this.context, 'record'),
-                                          callback: getFileData,
-                                        ))).then((url) {
-                              if (url != null) {
-                                onSendMessage(
-                                  context: this.context,
-                                  content: url +
-                                      '-BREAK-' +
-                                      uploadTimestamp.toString(),
-                                  type: MessageType.audio,
-                                );
+                            if (result != null) {
+                              var recordedUrl =  await getFileData(File(result.files[0].path!));
+                              if (recordedUrl != null) {
+                                    onSendMessage(
+                                      context: this.context,
+                                      content: recordedUrl + '-BREAK-' +
+                                          uploadTimestamp.toString(),
+                                      type: MessageType.audio,
+                                    );
                               } else {}
-                            });
+                            }
                           },
                           elevation: .5,
                           fillColor: Colors.yellow[900],
@@ -4024,49 +4041,51 @@ class _GroupChatPageState extends State<GroupChatPage>
                                   SizedBox(
                                     width: 7,
                                   ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        groupList
-                                            .lastWhere((element) =>
-                                                element
-                                                    .docmap[Dbkeys.groupID] ==
-                                                widget.groupID)
-                                            .docmap[Dbkeys.groupNAME],
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            color: DESIGN_TYPE ==
-                                                    Themetype.whatsapp
-                                                ? fiberchatWhite
-                                                : fiberchatBlack,
-                                            fontSize: 17.0,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      SizedBox(
-                                        height: 6,
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width /
-                                                1.3,
-                                        child: Text(
-                                          getTranslated(
-                                              context, 'tapherefrgrpinfo'),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          groupList
+                                              .lastWhere((element) =>
+                                                  element
+                                                      .docmap[Dbkeys.groupID] ==
+                                                  widget.groupID)
+                                              .docmap[Dbkeys.groupNAME],
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                               color: DESIGN_TYPE ==
                                                       Themetype.whatsapp
                                                   ? fiberchatWhite
-                                                  : fiberchatGrey,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w400),
+                                                  : fiberchatBlack,
+                                              fontSize: 17.0,
+                                              fontWeight: FontWeight.w500),
                                         ),
-                                      ),
-                                    ],
+                                        SizedBox(
+                                          height: 6,
+                                        ),
+                                        SizedBox(
+                                          width:
+                                              MediaQuery.of(context).size.width /
+                                                  1.3,
+                                          child: Text(
+                                            getTranslated(
+                                                context, 'tapherefrgrpinfo'),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                color: DESIGN_TYPE ==
+                                                        Themetype.whatsapp
+                                                    ? fiberchatWhite
+                                                    : fiberchatGrey,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w400),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
