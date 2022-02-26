@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info/device_info.dart';
@@ -58,6 +59,38 @@ class UserProvider with ChangeNotifier {
   User? currentUser;
   String? deviceid;
   var mapDeviceInfo = {};
+  String currentCallToken = '';
+  int currentCallUID = 0;
+
+  getCurrentCallToken() {
+    return currentCallToken;
+  }
+
+  getCurrentCallUID() {
+    return currentCallUID;
+  }
+
+  getRTCToken() async {
+
+    var response = await Dio().post('https://rudr-agora-rtc-token-gen.herokuapp.com/rtctoken', 
+    data: {
+      "isPublisher": true,
+      "channel": "Punk Panda"
+    });
+    
+    if (response.statusCode == 200) {
+
+      print('RTC TOKEN RECIEVED:');
+      print(response.data['token']);
+
+      // Update Token in User Provider
+      currentCallToken = response.data['token'];
+      currentCallUID = response.data['uid'];
+    }
+    else {
+      Fiberchat.toast('some error occurred');
+    }
+  }
 
   setdeviceinfo() async {
     if (Platform.isAndroid == true) {

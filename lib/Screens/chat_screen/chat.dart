@@ -12,6 +12,7 @@ import 'package:fiberchat/Screens/chat_screen/utils/uploadMediaWithProgress.dart
 import 'package:fiberchat/Screens/contact_screens/SelectContactsToForward.dart';
 import 'package:fiberchat/Screens/security_screens/security.dart';
 import 'package:fiberchat/Services/Admob/admob.dart';
+import 'package:fiberchat/Services/Providers/user_provider.dart';
 import 'package:fiberchat/widgets/CountryPicker/CountryCode.dart';
 import 'package:fiberchat/Configs/Dbkeys.dart';
 import 'package:fiberchat/Configs/Dbpaths.dart';
@@ -79,6 +80,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart' as emojipic;
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:fiberchat/Configs/Enum.dart';
+import 'package:http/http.dart' as http;
 
 hidekeyboard(BuildContext context) {
   FocusScope.of(context).requestFocus(FocusNode());
@@ -5550,6 +5552,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     var mynickname = widget.prefs.getString(Dbkeys.nickname) ?? '';
 
     var myphotoUrl = widget.prefs.getString(Dbkeys.photoUrl) ?? '';
+
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider.getRTCToken();
 
     CallUtils.dial(
         currentuseruid: widget.currentUserNo,
