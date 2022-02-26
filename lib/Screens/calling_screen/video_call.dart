@@ -12,6 +12,7 @@ import 'package:fiberchat/Configs/Enum.dart';
 import 'package:fiberchat/Configs/app_constants.dart';
 import 'package:fiberchat/Screens/homepage/homepage.dart';
 import 'package:fiberchat/Services/Providers/call_history_provider.dart';
+import 'package:fiberchat/Services/Providers/user_provider.dart';
 import 'package:fiberchat/Services/localization/language_constants.dart';
 import 'package:fiberchat/Models/call.dart';
 import 'package:fiberchat/Utils/call_utilities.dart';
@@ -106,14 +107,23 @@ class _VideoCallState extends State<VideoCall> {
     await _initAgoraRtcEngine();
     _addAgoraEventHandlers();
 
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.getRTCToken();
+    var token = userProvider.getCurrentCallToken();
+    var uid = userProvider.getCurrentCallUID();
+
+    print('inside audio call..');
+    print('rtc token recieved:');
+    print(token);
+
     VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
     configuration.dimensions = VideoDimensions(height: 1920, width: 1080);
     await _engine.setVideoEncoderConfiguration(configuration);
     await _engine.joinChannel(
-        '006cb25d30c28cc4ad081817a9325a4a576IACAp5QhoVWpQaf46TUQnuO4SZ14lcfhnyRjZCSRc2qHzu6BMmkAAAAAEAD1z9KPhpICYgEAAQCGkgJi',
+         token,
         'Punk Panda',
         null,
-        0);
+        uid);  
   }
 
   Future<void> _initAgoraRtcEngine() async {

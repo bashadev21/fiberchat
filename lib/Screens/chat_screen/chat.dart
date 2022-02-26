@@ -4956,9 +4956,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     var myphotoUrl = widget.prefs.getString(Dbkeys.photoUrl) ?? '';
 
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-    userProvider.getRTCToken();
-
     CallUtils.dial(
         currentuseruid: widget.currentUserNo,
         fromDp: myphotoUrl,
