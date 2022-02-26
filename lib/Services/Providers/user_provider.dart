@@ -74,7 +74,7 @@ class UserProvider with ChangeNotifier {
 
     var response = await Dio().post('https://rudr-agora-rtc-token-gen.herokuapp.com/rtctoken', 
     data: {
-      "isPublisher": true,
+      // "isPublisher": false,
       "channel": "Punk Panda"
     });
     

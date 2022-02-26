@@ -123,12 +123,13 @@ class _AudioCallState extends State<AudioCall> {
     _addAgoraEventHandlers();
 
     final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.getRTCToken();
     var token = userProvider.getCurrentCallToken();
     var uid = userProvider.getCurrentCallUID();
 
     print('inside audio call..');
     print('rtc token recieved:');
-    print('eeeee' + token.toString());
+    print(token);
 
     VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
     configuration.dimensions = VideoDimensions(height: 1920, width: 1080);
@@ -137,7 +138,7 @@ class _AudioCallState extends State<AudioCall> {
         token,
         'Punk Panda',
         null,
-        uid);    
+        uid);  
   }
 
   Future<void> _initAgoraRtcEngine() async {
