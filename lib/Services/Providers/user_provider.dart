@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info/device_info.dart';
@@ -58,36 +59,35 @@ class UserProvider with ChangeNotifier {
   String? deviceid;
   var mapDeviceInfo = {};
   String currentCallToken = '';
-  String currentCallUID = '';
+  int currentCallUID = 0;
 
-  getCurrentCallToken() async {
+  getCurrentCallToken() {
     return currentCallToken;
   }
 
-  getCurrentCallUID() async {
+  getCurrentCallUID() {
     return currentCallUID;
   }
 
   getRTCToken() async {
-    var url = Uri.parse(
-        'http://punkpanda.teckzy.co.in/sample/RtcTokenBuilderSample.php');
 
-    var response = await http.get(
-      url,
-    );
-
-    var jsonBody = response.body;
-    var data = json.decode(jsonBody);
+    var response = await Dio().post('https://rudr-agora-rtc-token-gen.herokuapp.com/rtctoken', 
+    data: {
+      "isPublisher": true,
+      "channel": "Punk Panda"
+    });
+    
     if (response.statusCode == 200) {
+
       print('RTC TOKEN RECIEVED:');
-      print(data[0]['Token with user account:']);
+      print(response.data['token']);
 
       // Update Token in User Provider
-      currentCallToken = data[0]['Token with user account:'];
-      currentCallUID = data[0]['Token with int uid:'];
+      currentCallToken = response.data['token'];
+      currentCallUID = response.data['uid'];
     }
     else {
-      Fiberchat.toast(data['msg']);
+      Fiberchat.toast('some error occurred');
     }
   }
 
