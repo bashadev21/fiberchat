@@ -86,7 +86,7 @@ class _LocationPickScreenState extends State<LocationPickScreen> {
                           ),
                           child: Icon(
                             _isFullScreenMap
-                                ? Icons.zoom_in_map
+                                ? Icons.zoom_out_map
                                 : Icons.zoom_out_map,
                             color: Colors.black,
                             size: 20,
