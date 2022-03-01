@@ -126,7 +126,9 @@ class _AudioCallState extends State<AudioCall> {
 
     bool isPublisher = false;
     if (widget.call.callerId == widget.currentuseruid){
+      setState(() {
         isPublisher = true;
+      });
     }
     await userProvider.getRTCToken(isPublisher);
     var token = userProvider.getCurrentCallToken();
