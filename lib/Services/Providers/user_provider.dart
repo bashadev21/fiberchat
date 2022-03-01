@@ -69,11 +69,11 @@ class UserProvider with ChangeNotifier {
     return currentCallUID;
   }
 
-  getRTCToken() async {
+  getRTCToken(bool isPublisher) async {
 
     var response = await Dio().post('https://rudr-agora-rtc-token-gen.herokuapp.com/rtctoken', 
     data: {
-      // "isPublisher": false,
+      "isPublisher": isPublisher,
       "channel": "Punk Panda"
     });
     
