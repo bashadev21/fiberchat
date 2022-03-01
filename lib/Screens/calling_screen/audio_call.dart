@@ -123,7 +123,12 @@ class _AudioCallState extends State<AudioCall> {
     _addAgoraEventHandlers();
 
     final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-    await userProvider.getRTCToken();
+
+    bool isPublisher = false;
+    if (widget.call.callerId == widget.currentuseruid){
+        isPublisher = true;
+    }
+    await userProvider.getRTCToken(isPublisher);
     var token = userProvider.getCurrentCallToken();
     var uid = userProvider.getCurrentCallUID();
 
@@ -157,7 +162,7 @@ class _AudioCallState extends State<AudioCall> {
       });
     }, joinChannelSuccess: (channel, uid, elapsed) {
       if (widget.call.callerId == widget.currentuseruid) {
-        // _playCallingTone();
+        _playCallingTone();
         setState(() {
           final info = 'onJoinChannel: $channel, uid: $uid';
           _infoStrings.add(info);
@@ -200,9 +205,6 @@ class _AudioCallState extends State<AudioCall> {
           'ENDED': null,
           'CALLERNAME': widget.call.callerName,
         }, SetOptions(merge: true));
-      }
-      else {
-        _playCallingTone();
       }
       Wakelock.enable();
     }, leaveChannel: (stats) {
