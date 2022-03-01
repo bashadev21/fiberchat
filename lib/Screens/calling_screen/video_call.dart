@@ -108,7 +108,14 @@ class _VideoCallState extends State<VideoCall> {
     _addAgoraEventHandlers();
 
     final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-    await userProvider.getRTCToken();
+
+    bool isPublisher = false;
+    if (widget.call.callerId == widget.currentuseruid){
+      setState(() {
+        isPublisher = true;
+      });
+    }
+    await userProvider.getRTCToken(isPublisher);
     var token = userProvider.getCurrentCallToken();
     var uid = userProvider.getCurrentCallUID();
 
