@@ -1,6 +1,9 @@
 //*************   © Copyrighted by Thinkcreative_Technologies. An Exclusive item of Envato market. Make sure you have purchased a Regular License OR Extended license for the Source Code from Envato to use this product. See the License Defination attached with source code. *********************
 
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -10,6 +13,7 @@ import 'package:fiberchat/Configs/Dbpaths.dart';
 import 'package:fiberchat/Configs/Enum.dart';
 import 'package:fiberchat/Configs/app_constants.dart';
 import 'package:fiberchat/Models/DataModel.dart';
+import 'package:fiberchat/Screens/call_history/callhistory.dart';
 import 'package:fiberchat/Screens/calling_screen/pickup_layout.dart';
 import 'package:fiberchat/Screens/chat_screen/chat.dart';
 import 'package:fiberchat/Screens/status/components/formatStatusTime.dart';
@@ -76,6 +80,7 @@ class _ProfileViewState extends State<ProfileView> {
         setState(() {});
       }
     });
+    getCommonGroups();
   }
 
   bool hasPeerBlockedMe = false;
@@ -98,6 +103,48 @@ class _ProfileViewState extends State<ProfileView> {
         }
       }
     });
+  }
+
+  // Common Groups 
+  List common_groups = [];
+  getCommonGroups() async {
+    if (widget.user.isNotEmpty) {
+      await FirebaseFirestore
+        .instance
+        .collection(DbPaths
+            .collectiongroups)
+        .get()
+        .then((querySnapshot){
+            querySnapshot.docs.forEach((doc) {
+
+            var currentAuthUserPhone = widget.prefs.getString(Dbkeys.phone);
+            var membersList = doc.data()['memberslist'];
+
+            if (membersList.contains(currentAuthUserPhone)
+            && membersList.contains(widget.user['phone'])
+            ) {
+              setState(() {
+                common_groups.add(doc.data());
+              });
+            }
+          });
+        });
+    }
+    print('fetching common groups');
+    print(common_groups);
+  }
+
+  renderGroupMembersList(membersList) {
+      return List.generate(membersList.length, (index){
+        if (index == membersList.length - 1){
+        return Text('${membersList[index]}', 
+              style: TextStyle(fontSize: 12));
+        }
+        else {
+        return Text('${membersList[index]} ,', 
+              style: TextStyle(fontSize: 12));
+        }
+      });
   }
 
   @override
@@ -462,6 +509,62 @@ class _ProfileViewState extends State<ProfileView> {
               ),
             ),
           ),
+          SizedBox(
+            height: 20,
+          ),
+          common_groups.isNotEmpty ?
+           Container(
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 18),
+            color: Colors.white,
+            child: Padding(
+                padding: const EdgeInsets.only(bottom: 9),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                   Padding(
+                padding: const EdgeInsets.only(bottom: 9),
+                        child: Text(
+                          'Common Groups',
+                          style: TextStyle(fontWeight: FontWeight.w600, height: 2),
+                        ),
+                      ),
+                    ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: common_groups.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              customCircleAvatarGroup(url: common_groups[index]['photourl'], radius: 15),
+                              SizedBox(width: 10),
+                                   Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                    Text(common_groups[index]['name'], 
+                                      style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      color: fiberchatBlack,
+                                      fontSize: 15),
+                                    ),
+                                  SizedBox(height: 5),
+                                  Row(
+                                    children: renderGroupMembersList(common_groups[index]['memberslist']),
+                                  ),
+                                ],
+                              ),),
+                            ],
+                          ),
+                        );
+                    },),
+                  ],
+                ),
+              ),
+          ) :
+          SizedBox(),
           SizedBox(
             height: IsBannerAdShow == true &&
                     observer.isadmobshow == true &&

@@ -157,7 +157,7 @@ class _AudioCallState extends State<AudioCall> {
       });
     }, joinChannelSuccess: (channel, uid, elapsed) {
       if (widget.call.callerId == widget.currentuseruid) {
-        _playCallingTone();
+        // _playCallingTone();
         setState(() {
           final info = 'onJoinChannel: $channel, uid: $uid';
           _infoStrings.add(info);
@@ -200,6 +200,9 @@ class _AudioCallState extends State<AudioCall> {
           'ENDED': null,
           'CALLERNAME': widget.call.callerName,
         }, SetOptions(merge: true));
+      }
+      else {
+        _playCallingTone();
       }
       Wakelock.enable();
     }, leaveChannel: (stats) {
