@@ -1,8 +1,10 @@
 import 'package:fiberchat/Configs/app_constants.dart';
 import 'package:fiberchat/Screens/auth_screens/login.dart';
+import 'package:fiberchat/Services/Providers/user_provider.dart';
 import 'package:fiberchat/Services/localization/language_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class EmailWiget extends StatelessWidget {
   EmailWiget({Key? key}) : super(key: key);
@@ -12,6 +14,8 @@ class EmailWiget extends StatelessWidget {
   Widget build(BuildContext context) {
     final _h = MediaQuery.of(context).size.height;
     final _w = MediaQuery.of(context).size.width;
+
+    final UserProvider userProvider = Provider.of<UserProvider>(context);
 
     return Container(
         height: _h * .8,
@@ -33,9 +37,9 @@ class EmailWiget extends StatelessWidget {
                 ),
                 InpuTextBox(
                   inputFormatter: [
-                    LengthLimitingTextInputFormatter(25),
+                    LengthLimitingTextInputFormatter(50),
                   ],
-                  controller: _email,
+                  controller: userProvider.userEmail,
                   leftrightmargin: 0,
                   showIconboundary: false,
                   boxcornerradius: 5.5,

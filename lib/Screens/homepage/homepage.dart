@@ -13,6 +13,7 @@ import 'package:fiberchat/Configs/optional_constants.dart';
 import 'package:fiberchat/Screens/Groups/AddContactsToGroup.dart';
 import 'package:fiberchat/Screens/SettingsOption/settingsOption.dart';
 import 'package:fiberchat/Screens/homepage/Setupdata.dart';
+import 'package:fiberchat/Screens/new_auth_screens/first_view.dart';
 import 'package:fiberchat/Screens/new_auth_screens/mainview.dart';
 import 'package:fiberchat/Screens/notifications/AllNotifications.dart';
 import 'package:fiberchat/Screens/security_screens/security.dart';
@@ -808,7 +809,7 @@ class HomepageState extends State<Homepage>
                     unawaited(Navigator.pushReplacement(
                         context,
                         new MaterialPageRoute(
-                            builder: (context) => new MainViewAuth(
+                            builder: (context) => new FirstViewAuth(
                                   prefs: widget.prefs,
                                   accountApprovalMessage:
                                       accountApprovalMessage,
@@ -964,7 +965,7 @@ class HomepageState extends State<Homepage>
               unawaited(Navigator.pushReplacement(
                   context,
                   new MaterialPageRoute(
-                      builder: (context) => new MainViewAuth(
+                      builder: (context) => new FirstViewAuth(
                             prefs: widget.prefs,
                             accountApprovalMessage: accountApprovalMessage,
                             isaccountapprovalbyadminneeded:

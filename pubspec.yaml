@@ -118,6 +118,7 @@ flutter:
     - assets/images/mapview.jpg
     - assets/images/background.png
     - assets/images/applogo.png
+    - assets/images/applogo_white.jpeg
     - assets/images/splash.jpeg
     - assets/images/img_not_available.jpeg
     - assets/sounds/popsound.mp3
