@@ -168,9 +168,6 @@ class UserProvider with ChangeNotifier {
       isLoading2 = false;
       isverficationsent = true;
       notifyListeners();
-      controller.animateToPage(2,
-          duration: Duration(milliseconds: 500), curve: Curves.ease);
-
     };
 
     final PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout =

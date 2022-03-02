@@ -100,20 +100,21 @@ class _MainViewAuthState extends State<MainViewAuth> {
               userProvider.currentIndex != 0
                   ? FloatingActionButton(
                       onPressed: () {
-                        if(userProvider.currentIndex ==1){
+                        if(userProvider.currentIndex == 1){
                           userProvider.controller.animateToPage(0,  duration: Duration(milliseconds: 500), curve: Curves.ease);
-                        }else if(userProvider.currentIndex ==2){
+
+                        }else if(userProvider.currentIndex == 2){
                           userProvider.controller.animateToPage(1,  duration: Duration(milliseconds: 500), curve: Curves.ease);
 
-                        }else if(userProvider.currentIndex ==3){
+                        }else if(userProvider.currentIndex == 3){
                           userProvider.controller.animateToPage(2,  duration: Duration(milliseconds: 500), curve: Curves.ease);
 
                         }
-                        else if(userProvider.currentIndex ==4){
+                        else if(userProvider.currentIndex == 4){
                           userProvider.controller.animateToPage(3,  duration: Duration(milliseconds: 500), curve: Curves.ease);
 
                         }
-                        else if(userProvider.currentIndex ==5){
+                        else if(userProvider.currentIndex == 5){
                           userProvider.controller.animateToPage(4,  duration: Duration(milliseconds: 500), curve: Curves.ease);
 
                         }
@@ -126,22 +127,26 @@ class _MainViewAuthState extends State<MainViewAuth> {
             ?   FloatingActionButton(
                 onPressed: () async {
                 if(!prov.isLoading){
-                  if(userProvider.currentIndex ==0){
+                  if(userProvider.currentIndex == 0){
                     userProvider.controller.animateToPage(1,  duration: Duration(milliseconds: 500), curve: Curves.ease);
-                  }else if(userProvider.currentIndex ==1){
+                  }else if(userProvider.currentIndex == 4){
                     if(userProvider.usermobile.text.isEmpty){
                       Fiberchat.toast('Please enter mobile number !');
                     }else{
                       userProvider.verifyPhoneNumber(context,widget.isaccountapprovalbyadminneeded, widget.accountApprovalMessage,widget.prefs,widget.issecutitysetupdone);
-                      userProvider.controller.animateToPage(2,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+
+                      if (userProvider.isverficationsent) {
+                        userProvider.isLoading2 = false;
+                        userProvider.controller.animateToPage(5,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+                      }
                     }
                   }
                   
-                  else if(userProvider.currentIndex == 2){
-                    userProvider.controller.animateToPage(3,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+                  else if(userProvider.currentIndex == 5){
+                    userProvider.handleSignIn( context, widget.isaccountapprovalbyadminneeded, widget.accountApprovalMessage, widget.prefs, widget.issecutitysetupdone);
                   }
 
-                  else if(userProvider.currentIndex ==3){
+                  else if(userProvider.currentIndex == 2){
                     var response = await checkIfAccountExists(userProvider.userEmail.text.trim());
                       if (response != null) {
                         if (response['status'] == 'SUCCESS') {
@@ -149,7 +154,7 @@ class _MainViewAuthState extends State<MainViewAuth> {
 
                               if (verificationResponse != null) {
                                 if (verificationResponse['status'] == 'SUCCESS') {
-                                    userProvider.controller.animateToPage(4,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+                                    userProvider.controller.animateToPage(3,  duration: Duration(milliseconds: 500), curve: Curves.ease);
                                 }
                                 Fiberchat.toast(verificationResponse['msg']);
                               }
@@ -157,23 +162,23 @@ class _MainViewAuthState extends State<MainViewAuth> {
                           Fiberchat.toast(response['msg']);
                       }
                      
-                  }else if(userProvider.currentIndex ==4){
-                    if(userProvider.otpfield.text.length!=6){
+                  }else if(userProvider.currentIndex == 3) {
+                    if(userProvider.otpfield.text.length!=6) {
                       Fiberchat.toast('Enter valid otp !');
                     }else{
                       var verifyResult = await verifyEmailOTP(userProvider.userEmail.text.trim(), userProvider.otpfield.text);
 
                       if (verifyResult != null) {
                         if (verifyResult['status'] == 'SUCCESS') {
-                            userProvider.controller.animateToPage(5,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+                            userProvider.controller.animateToPage(4,  duration: Duration(milliseconds: 500), curve: Curves.ease);
                         }
                         Fiberchat.toast(verifyResult['msg']);
                       }
                     }
 
-                  }else if(userProvider.currentIndex ==5){
-                    userProvider.username.text=userProvider.firstname.text+userProvider.lastname.text;
-                    userProvider.handleSignIn( context, widget.isaccountapprovalbyadminneeded, widget.accountApprovalMessage, widget.prefs, widget.issecutitysetupdone);
+                  } else if(userProvider.currentIndex == 1) {
+                    userProvider.username.text = userProvider.firstname.text+userProvider.lastname.text;
+                    userProvider.controller.animateToPage(2,  duration: Duration(milliseconds: 500), curve: Curves.ease);
                   }
 
                 }
@@ -231,17 +236,8 @@ class _MainViewAuthState extends State<MainViewAuth> {
                       return Container(
                         child: i == 0
                             ? InvitationWidget()
-                            : i == 1 ? MobileWidget(
-                            prefs: widget.prefs,
-                            accountApprovalMessage:
-                            widget.accountApprovalMessage,
-                            isaccountapprovalbyadminneeded:
-                            widget.isaccountapprovalbyadminneeded,
-                            isblocknewlogins:widget.isblocknewlogins,
-                            title: getTranslated(context, 'signin'),
-                            issecutitysetupdone:
-                            widget.issecutitysetupdone,
-                        )
+                            : i == 1 ? NameWidget()
+                            
                         //         ? LoginScreen(
                         //   prefs: widget.prefs,
                         //   accountApprovalMessage:
@@ -254,13 +250,23 @@ class _MainViewAuthState extends State<MainViewAuth> {
                         //   widget.issecutitysetupdone,
                         //
                         // )    
-                                : i == 2 ? MobileOtpWidget()
+                                : i == 2 ? EmailWiget()
                                 : i == 3
-                                    ? EmailWiget()
+                                    ? OtpWidget()
                                     : i == 4
-                                        ? OtpWidget()
+                                        ? MobileWidget(
+                                              prefs: widget.prefs,
+                                              accountApprovalMessage:
+                                              widget.accountApprovalMessage,
+                                              isaccountapprovalbyadminneeded:
+                                              widget.isaccountapprovalbyadminneeded,
+                                              isblocknewlogins:widget.isblocknewlogins,
+                                              title: getTranslated(context, 'signin'),
+                                              issecutitysetupdone:
+                                              widget.issecutitysetupdone,
+                                          )
                                         : i == 5
-                                            ? NameWidget()
+                                            ? MobileOtpWidget()
                                             : Container(),
                       );
                     }),
