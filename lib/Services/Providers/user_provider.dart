@@ -40,10 +40,13 @@ class UserProvider with ChangeNotifier {
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   String codeverify = "";
   final usermobile = TextEditingController();
+  String mobileOTPString = "";
 
   // final _smsCode = TextEditingController();
   final username = TextEditingController();
   final otpfield = TextEditingController();
+  final userEmail = TextEditingController();
+  final mobileOTPField = TextEditingController();
 
   String? phoneCode = DEFAULT_COUNTTRYCODE_NUMBER;
   final storage = new FlutterSecureStorage();
@@ -179,7 +182,7 @@ class UserProvider with ChangeNotifier {
 
       // this.verificationId = verificationId;
     };
-log("(phoneCode! + usermobile.text).trim()  ==>  ${(phoneCode! + usermobile.text).trim()}");
+
     await firebaseAuth.verifyPhoneNumber(
         phoneNumber: (phoneCode! + usermobile.text).trim(),
         timeout: const Duration(seconds: 60),
@@ -267,11 +270,10 @@ log("(phoneCode! + usermobile.text).trim()  ==>  ${(phoneCode! + usermobile.text
     AuthCredential credential;
     print(
         "verificationId ==>   $verificationId \n\n$codeverify \n\n $authCredential");
-    await firebaseAuth.signOut();
     if (authCredential == null)
       credential = PhoneAuthProvider.credential(
         verificationId: verificationId!,
-        smsCode: codeverify,
+        smsCode: mobileOTPString,
       );
     else
       credential = authCredential;
