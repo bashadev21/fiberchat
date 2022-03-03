@@ -43,49 +43,6 @@ class MainViewAuth extends StatefulWidget {
 
 class _MainViewAuthState extends State<MainViewAuth> {
 
-  sendVerificationEmail(String email, String ip_addr) async {
-  var query_string = 'reg_em=' + email + '&ip_addr=' +  ip_addr;
-  var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/send_reg_otp?' + query_string);
-   
-    if (response.statusCode == 200) {
-      var data = response.data;
-      debugPrint(data.toString());
-      return jsonDecode(data);
-    }
-    else {
-      Fiberchat.toast('some error occurred');
-    }
-  }
-
-  verifyEmailOTP(String email, String otp) async {
-    var query_string = 'reg_em=' + email + '&otp=' + otp;
-    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/verify_reg_otp?' + query_string);
-   
-    if (response.statusCode == 200) {
-      var data = response.data;
-      debugPrint(data.toString());
-      return jsonDecode(data);
-    }
-    else {
-      Fiberchat.toast('some error occurred');
-    }
-  }
-
-  checkIfAccountExists(String email) async {
-    var query_string = 'reg_em=' + email;
-    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/check_em?' + query_string);
-   
-    if (response.statusCode == 200) {
-      var data = response.data;
-      debugPrint(data.toString());
-      return jsonDecode(data);
-    }
-    else {
-      Fiberchat.toast('some error occurred');
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     final UserProvider userProvider = Provider.of<UserProvider>(context);
@@ -136,7 +93,6 @@ class _MainViewAuthState extends State<MainViewAuth> {
                       userProvider.verifyPhoneNumber(context,widget.isaccountapprovalbyadminneeded, widget.accountApprovalMessage,widget.prefs,widget.issecutitysetupdone);
 
                       if (userProvider.isverficationsent) {
-                        userProvider.isLoading2 = false;
                         userProvider.controller.animateToPage(5,  duration: Duration(milliseconds: 500), curve: Curves.ease);
                       }
                     }
@@ -147,10 +103,10 @@ class _MainViewAuthState extends State<MainViewAuth> {
                   }
 
                   else if(userProvider.currentIndex == 2){
-                    var response = await checkIfAccountExists(userProvider.userEmail.text.trim());
+                    var response = await userProvider.checkIfAccountExists(userProvider.userEmail.text.trim());
                       if (response != null) {
                         if (response['status'] == 'SUCCESS') {
-                              var verificationResponse = await sendVerificationEmail(userProvider.userEmail.text.trim(), '1.2.3.4');
+                              var verificationResponse = await userProvider.sendVerificationEmail(userProvider.userEmail.text.trim(), '1.2.3.4');
 
                               if (verificationResponse != null) {
                                 if (verificationResponse['status'] == 'SUCCESS') {
@@ -166,7 +122,7 @@ class _MainViewAuthState extends State<MainViewAuth> {
                     if(userProvider.otpfield.text.length!=6) {
                       Fiberchat.toast('Enter valid otp !');
                     }else{
-                      var verifyResult = await verifyEmailOTP(userProvider.userEmail.text.trim(), userProvider.otpfield.text);
+                      var verifyResult = await userProvider.verifyEmailOTP(userProvider.userEmail.text.trim(), userProvider.otpfield.text);
 
                       if (verifyResult != null) {
                         if (verifyResult['status'] == 'SUCCESS') {
