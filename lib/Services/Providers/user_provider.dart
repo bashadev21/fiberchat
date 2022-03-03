@@ -25,6 +25,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fiberchat/Models/E2EE/e2ee.dart' as e2ee;
 
 class UserProvider with ChangeNotifier {
+
+  // Login Related Variables Here..
+
+  var loginViewIndex = 0;
+  PageController loginViewController =
+      PageController(viewportFraction: 1, keepPage: true);
+
+  // --
+
   var currentIndex = 0;
   PageController controller =
       PageController(viewportFraction: 1, keepPage: true);
@@ -555,6 +564,48 @@ class UserProvider with ChangeNotifier {
 
     _user = UserModel.fromMap(documentSnapshot.data() as Map<String, dynamic>);
     notifyListeners();
+  }
+
+  sendVerificationEmail(String email, String ip_addr) async {
+    var query_string = 'reg_em=' + email + '&ip_addr=' +  ip_addr;
+    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/send_reg_otp?' + query_string);
+    
+      if (response.statusCode == 200) {
+        var data = response.data;
+        debugPrint(data.toString());
+        return jsonDecode(data);
+      }
+      else {
+        Fiberchat.toast('some error occurred');
+      }
+  }
+
+  verifyEmailOTP(String email, String otp) async {
+    var query_string = 'reg_em=' + email + '&otp=' + otp;
+    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/verify_reg_otp?' + query_string);
+   
+    if (response.statusCode == 200) {
+      var data = response.data;
+      debugPrint(data.toString());
+      return jsonDecode(data);
+    }
+    else {
+      Fiberchat.toast('some error occurred');
+    }
+  }
+
+  checkIfAccountExists(String email) async {
+    var query_string = 'reg_em=' + email;
+    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/check_em?' + query_string);
+   
+    if (response.statusCode == 200) {
+      var data = response.data;
+      debugPrint(data.toString());
+      return jsonDecode(data);
+    }
+    else {
+      Fiberchat.toast('some error occurred');
+    }
   }
 }
 

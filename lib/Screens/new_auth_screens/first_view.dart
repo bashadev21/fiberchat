@@ -1,4 +1,5 @@
 import 'package:fiberchat/Configs/app_constants.dart';
+import 'package:fiberchat/Screens/new_auth_screens/login_screens/login_mainview.dart';
 import 'package:fiberchat/Screens/new_auth_screens/mainview.dart';
 import 'package:fiberchat/Services/localization/language_constants.dart';
 import 'package:fiberchat/Utils/unawaited.dart';
@@ -49,7 +50,21 @@ class _FirstViewAuthState extends State<FirstViewAuth> {
                 ))));
   }
 
-  proceedSignIn(context) {}
+  proceedSignIn(context) {
+    unawaited(Navigator.pushReplacement(
+        context,
+        new MaterialPageRoute(
+            builder: (context) => new LoginMainView(
+                  prefs: widget.prefs,
+                  accountApprovalMessage: widget.accountApprovalMessage,
+                  isaccountapprovalbyadminneeded:
+                      widget.isaccountapprovalbyadminneeded,
+                  isblocknewlogins: widget.isblocknewlogins,
+                  title: 'Main View',
+                  issecutitysetupdone: widget.issecutitysetupdone,
+                ))));
+
+  }
 
   @override
   Widget build(BuildContext context) {
