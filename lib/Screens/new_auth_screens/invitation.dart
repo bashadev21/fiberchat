@@ -102,7 +102,7 @@ class _InvitationWidgetState extends State<InvitationWidget> {
           ),
           Column(
             children: [
-           Text('How you been invited by:',style: TextStyle(
+           Text('You are invited by:',style: TextStyle(
              color: fiberchatBlue,
              fontSize: 20
            ),),

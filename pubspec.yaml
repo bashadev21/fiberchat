@@ -127,7 +127,7 @@ flutter:
     - assets/images/splash.jpeg
     - assets/images/img_not_available.jpeg
     - assets/sounds/popsound.mp3
-    - assets/sounds/callingtone.mp3
+    - assets/sounds/callingtone.mpeg
     - assets/sounds/ringtone.mp3
     - assets/sounds/whistle.mp3
     - assets/flags/

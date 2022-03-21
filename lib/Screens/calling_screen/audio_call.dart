@@ -98,7 +98,7 @@ class _AudioCallState extends State<AudioCall> {
   late audioPlayers.AudioPlayer player;
   AudioCache audioCache = AudioCache();
   Future<Null> _playCallingTone() async {
-    player = await audioCache.loop('sounds/callingtone.mp3', volume: 6);
+    player = await audioCache.loop('sounds/callingtone.mpeg', volume: 6);
 
     setState(() {});
   }
