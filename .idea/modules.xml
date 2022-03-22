@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/fiberchat.iml" filepath="$PROJECT_DIR$/.idea/fiberchat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/fiberchat_android.iml" filepath="$PROJECT_DIR$/android/fiberchat_android.iml" />
     </modules>
   </component>
 </project>

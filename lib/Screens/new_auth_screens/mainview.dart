@@ -93,7 +93,7 @@ class _MainViewAuthState extends State<MainViewAuth> {
                       userProvider.verifyPhoneNumber(context,widget.isaccountapprovalbyadminneeded, widget.accountApprovalMessage,widget.prefs,widget.issecutitysetupdone);
 
                       if (userProvider.isverficationsent) {
-                        userProvider.controller.animateToPage(5,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+
                       }
                     }
                   }
@@ -141,7 +141,7 @@ class _MainViewAuthState extends State<MainViewAuth> {
                 },
                 child:prov.isLoading?CircularProgressIndicator(
                   color: Colors.white,
-                ): Icon(userProvider.currentIndex==4?Icons.check:Icons.arrow_forward),
+                ): Icon(userProvider.currentIndex==5?Icons.check:Icons.arrow_forward),
               ):SizedBox()),
             ],
           ),

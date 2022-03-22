@@ -184,6 +184,7 @@ class UserProvider with ChangeNotifier {
       isLoading = false;
       isLoading2 = false;
       isverficationsent = false;
+      controller.animateToPage(5,  duration: Duration(milliseconds: 500), curve: Curves.ease);
       notifyListeners();
 
       // this.verificationId = verificationId;

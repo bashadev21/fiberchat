@@ -87,8 +87,6 @@ dependencies:
   wakelock:
 
   google_maps_flutter: ^2.1.1
-#  image_editor_pro:
-#    path: package/intermediate
 
   flutter:
     sdk: flutter

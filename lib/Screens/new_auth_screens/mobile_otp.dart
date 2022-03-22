@@ -68,17 +68,17 @@ class MobileOtpWidget extends StatelessWidget {
               SizedBox(
                 height: 20,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Edit Email',style: TextStyle(
-                    color: Colors.red
-                  ),),
-                  Text('Re-send OTP',style: TextStyle(
-                      color: Colors.red
-                  ),),
-                ],
-              )
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Text('Edit Email',style: TextStyle(
+              //       color: Colors.red
+              //     ),),
+              //     Text('Re-send OTP',style: TextStyle(
+              //         color: Colors.red
+              //     ),),
+              //   ],
+              // )
 
 
             ],
