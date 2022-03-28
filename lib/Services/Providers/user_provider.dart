@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fiberchat/Models/E2EE/e2ee.dart' as e2ee;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProvider with ChangeNotifier {
 
@@ -45,6 +46,7 @@ class UserProvider with ChangeNotifier {
   final TextEditingController otp = TextEditingController();
   final TextEditingController firstname = TextEditingController();
   final TextEditingController lastname = TextEditingController();
+  final TextEditingController invitationame = TextEditingController();
 
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   String codeverify = "";
@@ -141,7 +143,7 @@ class UserProvider with ChangeNotifier {
   Language? seletedlanguage;
 
   Future<void> verifyPhoneNumber(context, isaccountapprovalbyadminneeded,
-      accountApprovalMessage, prefs, issecutitysetupdone) async {
+      accountApprovalMessage, prefs, issecutitysetupdone,{islogin=false}) async {
     isLoading = true;
     final PhoneVerificationCompleted verificationCompleted =
         (AuthCredential phoneAuthCredential) {
@@ -176,6 +178,12 @@ class UserProvider with ChangeNotifier {
       isLoading = false;
       isLoading2 = false;
       isverficationsent = true;
+      if(islogin){
+        loginViewController.nextPage(duration: Duration(milliseconds: 500), curve: Curves.ease);
+      }else{
+        controller.animateToPage(5,  duration: Duration(milliseconds: 500), curve: Curves.ease);
+      }
+
       notifyListeners();
     };
 
@@ -241,6 +249,40 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+
+  Future logincheck(context,isaccountapprovalbyadminneeded,accountApprovalMessage,prefs,issecutitysetupdone) async {
+    var url = Uri.parse(
+        'http://www.pandasapi.com/panda_chat/api/login_check?reg_mob=${usermobile.text}&ip_addr=1.2.3.4');
+
+    var response = await http.get(
+      url,
+    );
+
+    var jsonBody = response.body;
+    var data = json.decode(jsonBody);
+    print(data);
+    if (response.statusCode == 200) {
+      if (data['status'] == 'SUCCESS') {
+        firstname.text=data['firstname'];
+        lastname.text=data['lastname'];
+
+        verifyPhoneNumber(
+            context,
+            isaccountapprovalbyadminneeded,
+            accountApprovalMessage,
+            prefs,
+          issecutitysetupdone,islogin: true);
+        notifyListeners();
+
+      } else {
+        Fiberchat.toast(data['msg']);
+      }
+      notifyListeners();
+    } else {
+      notifyListeners();
+    }
+  }
+
   Future checkInvitation() async {
     var url = Uri.parse(
         'http://www.pandasapi.com/panda_chat/api/check_ref_code?ref_code=${refCode.text}');
@@ -251,8 +293,11 @@ class UserProvider with ChangeNotifier {
 
     var jsonBody = response.body;
     var data = json.decode(jsonBody);
+    print(data);
     if (response.statusCode == 200) {
       if (data['status'] == 'SUCCESS') {
+        invitationame..text=data['msg'];
+        notifyListeners();
         controller.animateToPage(1,
             duration: Duration(milliseconds: 500), curve: Curves.ease);
       } else {
@@ -263,6 +308,60 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future getwalletdetails() async {
+    var url = Uri.parse(
+        'http://www.pandasapi.com/panda_chat/api/get_wallet?reg_em=info@punkpanda.io');
+    print('hhhh'+url.toString());
+    var response = await http.get(
+      url,
+    );
+
+    var jsonBody = response.body;
+    var data = json.decode(jsonBody);
+    print(data);
+    if (response.statusCode == 200) {
+      if (data['status'] == 'SUCCESS') {
+
+        // Fiberchat.toast(data['msg']);
+        notifyListeners();
+
+      } else {
+        // Fiberchat.toast(data['msg']);
+      }
+      notifyListeners();
+    } else {
+      notifyListeners();
+    }
+  }
+
+
+  Future userregister() async {
+    var url = Uri.parse(
+        'http://www.pandasapi.com/panda_chat/api/register?ref_code=${refCode.text}&reg_em=${userEmail.text}&reg_mob=${usermobile.text}&otp=${otpfield.text}&nm=${firstname.text}&lnm=${lastname.text}&ccode=$phoneCode&cnm=India&ip_addr=1.2.3.4');
+    var response = await http.get(
+      url,
+    );
+
+    var jsonBody = response.body;
+    var data = json.decode(jsonBody);
+    print(data);
+    if (response.statusCode == 200) {
+      if (data['status'] == 'SUCCESS') {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('adminuseremail', userEmail.text);
+        // Fiberchat.toast(data['msg']);
+        notifyListeners();
+
+      } else {
+        Fiberchat.toast(data['msg']);
+      }
+      notifyListeners();
+    } else {
+      notifyListeners();
+    }
+  }
+
 
   Future<Null> handleSignIn(context, isaccountapprovalbyadminneeded,
       accountApprovalMessage, prefs, issecutitysetupdone,
@@ -313,6 +412,7 @@ class UserProvider with ChangeNotifier {
     // return;
     // ignore: unnecessary_null_comparison
     if (firebaseUser != null) {
+      userregister();
       // Check is already sign up
       final QuerySnapshot result = await FirebaseFirestore.instance
           .collection(DbPaths.collectionusers)
@@ -322,6 +422,8 @@ class UserProvider with ChangeNotifier {
       final pair = await e2ee.X25519().generateKeyPair();
 
       if (documents.isEmpty) {
+        print('heloooo');
+
         await storage.write(
             key: Dbkeys.privateKey, value: pair.secretKey.toBase64());
         // Update data to server if new user
@@ -444,6 +546,7 @@ class UserProvider with ChangeNotifier {
         //   title: getTranslated(this.context, 'authh'),
         // ))));
       } else {
+
         await storage.write(
             key: Dbkeys.privateKey, value: documents[0][Dbkeys.privateKey]);
         String? fcmToken = await FirebaseMessaging.instance.getToken();
@@ -584,7 +687,7 @@ class UserProvider with ChangeNotifier {
 
   verifyEmailOTP(String email, String otp) async {
     var query_string = 'reg_em=' + email + '&otp=' + otp;
-    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/verify_reg_otp?' + query_string);
+    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/verify_login_otp?' + query_string);
    
     if (response.statusCode == 200) {
       var data = response.data;

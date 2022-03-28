@@ -88,9 +88,9 @@ class _InvitationWidgetState extends State<InvitationWidget> {
                     Fiberchat.toast(
                       'Enter valid invitation code'
                     );
-                  }else if(name.text.length==0){
+                  }else if(userProvider.refCode.text.length!=8){
                     Fiberchat.toast(
-                        'Enter valid name'
+                        'Enter valid Ref code'
                     );
                   }else{
                     userProvider.checkInvitation();
@@ -107,11 +107,13 @@ class _InvitationWidgetState extends State<InvitationWidget> {
              fontSize: 20
            ),),
 
-              TextField(
+    Consumer<UserProvider>(
+    builder: (_, prov, __) =>  TextField(
+      enabled: false,
                 textAlign: TextAlign.center,
 
-                controller: name,
-              )
+                controller: prov.invitationame,
+              ))
             ],
           ),
           SizedBox(

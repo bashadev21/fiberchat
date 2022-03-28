@@ -54,15 +54,8 @@ class _LoginMainViewState extends State<LoginMainView> {
               userProvider.loginViewIndex != 0
                   ? FloatingActionButton(
                       onPressed: () {
-                        if (userProvider.currentIndex == 1) {
-                          userProvider.loginViewController.animateToPage(0,
-                              duration: Duration(milliseconds: 500),
-                              curve: Curves.ease);
-                        } else if (userProvider.currentIndex == 2) {
-                          userProvider.loginViewController.animateToPage(1,
-                              duration: Duration(milliseconds: 500),
-                              curve: Curves.ease);
-                        }
+                        userProvider.loginViewController.previousPage( duration: Duration(milliseconds: 500),
+                            curve: Curves.ease);
                       },
                       child: Icon(Icons.arrow_back),
                     )
@@ -71,28 +64,39 @@ class _LoginMainViewState extends State<LoginMainView> {
                   builder: (_, prov, __) => FloatingActionButton(
                         onPressed: () async {
                           if (userProvider.loginViewIndex == 0) {
-                            var response =
-                                await userProvider.checkIfAccountExists(
-                                    userProvider.userEmail.text.trim());
-                            if (response != null) {
-                              var verificationResponse =
-                                  await userProvider.sendVerificationEmail(
-                                      userProvider.userEmail.text.trim(),
-                                      '1.2.3.4');
-
-                              if (verificationResponse != null) {
-                                if (verificationResponse['status'] ==
-                                    'SUCCESS') {
-                                  userProvider.loginViewController
-                                      .animateToPage(1,
-                                          duration: Duration(milliseconds: 500),
-                                          curve: Curves.ease);
-                                }
-                                Fiberchat.toast(verificationResponse['msg']);
-                              }
-
-                              Fiberchat.toast(response['msg']);
-                            }
+                      userProvider.logincheck(                          context,
+                          widget.isaccountapprovalbyadminneeded,
+                          widget.accountApprovalMessage,
+                          widget.prefs,
+                          widget.issecutitysetupdone);
+                      // userProvider.verifyPhoneNumber(
+                      //     context,
+                      //     widget.isaccountapprovalbyadminneeded,
+                      //     widget.accountApprovalMessage,
+                      //     widget.prefs,
+                      //     widget.issecutitysetupdone);
+                            // var response =
+                            //     await userProvider.checkIfAccountExists(
+                            //         userProvider.userEmail.text.trim());
+                            // if (response != null) {
+                            //   var verificationResponse =
+                            //       await userProvider.sendVerificationEmail(
+                            //           userProvider.userEmail.text.trim(),
+                            //           '1.2.3.4');
+                            //
+                            //   if (verificationResponse != null) {
+                            //     if (verificationResponse['status'] ==
+                            //         'SUCCESS') {
+                            //       userProvider.loginViewController
+                            //           .animateToPage(1,
+                            //               duration: Duration(milliseconds: 500),
+                            //               curve: Curves.ease);
+                            //     }
+                            //     Fiberchat.toast(verificationResponse['msg']);
+                            //   }
+                            //
+                            //   Fiberchat.toast(response['msg']);
+                            // }
                           } else if (userProvider.loginViewIndex == 1) {
                             if (userProvider.otpfield.text.length != 6) {
                               Fiberchat.toast('Enter valid otp !');
@@ -115,12 +119,7 @@ class _LoginMainViewState extends State<LoginMainView> {
                             if (userProvider.usermobile.text.isEmpty) {
                               Fiberchat.toast('Please enter mobile number !');
                             } else {
-                              userProvider.verifyPhoneNumber(
-                                  context,
-                                  widget.isaccountapprovalbyadminneeded,
-                                  widget.accountApprovalMessage,
-                                  widget.prefs,
-                                  widget.issecutitysetupdone);
+
 
                               if (userProvider.isverficationsent) {
                                 userProvider.loginViewController.animateToPage(
@@ -179,27 +178,26 @@ class _LoginMainViewState extends State<LoginMainView> {
                       });
                     },
                     controller: userProvider.loginViewController,
-                    itemCount: 4,
+                    itemCount: 3,
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (context, i) {
                       return Container(
                         child: i == 0
-                            ? LoginEmailWiget()
+                            ?LoginMobileWidget(
+                            issecutitysetupdone:
+                            widget.issecutitysetupdone,
+                            isaccountapprovalbyadminneeded: widget
+                                .isaccountapprovalbyadminneeded,
+                            accountApprovalMessage:
+                            widget.accountApprovalMessage,
+                            prefs: widget.prefs,
+                            isblocknewlogins:
+                            widget.isblocknewlogins)
                             : i == 1
                                 ? LoginEmailOtpWidget()
                                 : i == 2
-                                    ? LoginMobileWidget(
-                                        issecutitysetupdone:
-                                            widget.issecutitysetupdone,
-                                        isaccountapprovalbyadminneeded: widget
-                                            .isaccountapprovalbyadminneeded,
-                                        accountApprovalMessage:
-                                            widget.accountApprovalMessage,
-                                        prefs: widget.prefs,
-                                        isblocknewlogins:
-                                            widget.isblocknewlogins)
-                                    : i == 3
-                                        ? LoginMobileOtpWidget()
+                                    ? LoginMobileOtpWidget()
+
                                         : Container(),
                       );
                     }),

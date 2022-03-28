@@ -12,6 +12,7 @@ import 'package:fiberchat/Screens/calling_screen/pickup_layout.dart';
 import 'package:fiberchat/Screens/notifications/AllNotifications.dart';
 import 'package:fiberchat/Screens/privacypolicy&TnC/PdfViewFromCachedUrl.dart';
 import 'package:fiberchat/Services/Providers/Observer.dart';
+import 'package:fiberchat/Services/Providers/user_provider.dart';
 import 'package:fiberchat/Services/localization/language_constants.dart';
 import 'package:fiberchat/Utils/utils.dart';
 import 'package:fiberchat/widgets/MyElevatedButton/MyElevatedButton.dart';
@@ -55,6 +56,7 @@ class _SettingsOptionState extends State<SettingsOption> {
   Widget build(BuildContext context) {
     var w = MediaQuery.of(context).size.width;
     final observer = Provider.of<Observer>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(context);
     return PickupLayout(
         scaffold: Fiberchat.getNTPWrappedWidget(Scaffold(
       backgroundColor: Colors.white,
@@ -188,6 +190,8 @@ class _SettingsOptionState extends State<SettingsOption> {
           ),
           ListTile(
             onTap: () {
+
+              userProvider.getwalletdetails();
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => WalletView()));
               //  launch('mailto:${observer.feedbackEmail}');
