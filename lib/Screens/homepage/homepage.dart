@@ -1091,6 +1091,8 @@ class HomepageState extends State<Homepage>
   Widget build(BuildContext context) {
     super.build(context);
     final observer = Provider.of<Observer>(context, listen: true);
+    final UserProvider userProvider = Provider.of<UserProvider>(context);
+    userProvider.sendtime();
     List<Widget> _widgetOptions = <Widget>[
       RecentChats(
         prefs: widget.prefs,

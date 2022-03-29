@@ -121,6 +121,7 @@ class _SettingsOptionState extends State<SettingsOption> {
                         ),
                         trailing: IconButton(
                             onPressed: () {
+                              userProvider.sendtime();
                               widget.onTapEditProfile();
                             },
                             icon: Icon(
@@ -149,6 +150,7 @@ class _SettingsOptionState extends State<SettingsOption> {
                       ),
                       trailing: IconButton(
                           onPressed: () {
+                            userProvider.sendtime();
                             widget.onTapEditProfile();
                           },
                           icon: Icon(
@@ -160,6 +162,7 @@ class _SettingsOptionState extends State<SettingsOption> {
           Divider(),
           ListTile(
             onTap: () {
+              userProvider.sendtime();
               widget.onTapEditProfile();
             },
             contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),
@@ -190,11 +193,11 @@ class _SettingsOptionState extends State<SettingsOption> {
           ),
           ListTile(
             onTap: () {
-
+userProvider.sendtime();
               userProvider.getwalletdetails();
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => WalletView()));
-              //  launch('mailto:${observer.feedbackEmail}');
+              // launch('mailto:${observer.feedbackEmail}');
             },
             contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),
             leading: Padding(
@@ -224,6 +227,7 @@ class _SettingsOptionState extends State<SettingsOption> {
           ),
           ListTile(
             onTap: () {
+              userProvider.sendtime();
               onTapRateApp();
             },
             contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),
@@ -254,6 +258,7 @@ class _SettingsOptionState extends State<SettingsOption> {
           ),
           ListTile(
             onTap: () {
+              userProvider.sendtime();
               Navigator.push(
                   context,
                   new MaterialPageRoute(
@@ -287,6 +292,7 @@ class _SettingsOptionState extends State<SettingsOption> {
           ),
           ListTile(
             onTap: () {
+              userProvider.sendtime();
               if (ConnectWithAdminApp == false) {
                 launch(TERMS_CONDITION_URL);
               } else {
@@ -339,6 +345,7 @@ class _SettingsOptionState extends State<SettingsOption> {
           ),
           ListTile(
             onTap: () {
+              userProvider.sendtime();
               final observer = Provider.of<Observer>(context, listen: false);
               if (ConnectWithAdminApp == false) {
                 launch(PRIVACY_POLICY_URL);
@@ -391,6 +398,7 @@ class _SettingsOptionState extends State<SettingsOption> {
           ),
           ListTile(
             onTap: () {
+              userProvider.sendtime();
               Fiberchat.invite(context);
             },
             contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),

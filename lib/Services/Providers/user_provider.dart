@@ -73,6 +73,8 @@ class UserProvider with ChangeNotifier {
   User? currentUser;
   String? deviceid;
   var mapDeviceInfo = {};
+  var walletdetails = {};
+
   String currentCallToken = '';
   int currentCallUID = 0;
 
@@ -265,9 +267,10 @@ class UserProvider with ChangeNotifier {
       if (data['status'] == 'SUCCESS') {
         firstname.text=data['firstname'];
         lastname.text=data['lastname'];
-        username.text=        firstname.text+lastname.text;
+        username.text=firstname.text+lastname.text;
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('adminuseremail', data['email']);
+        await prefs.setString('adminusermobile', usermobile.text);
         verifyPhoneNumber(
             context,
             isaccountapprovalbyadminneeded,
@@ -284,6 +287,39 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future sendtime() async {
+    final prefs = await SharedPreferences.getInstance();
+   var mob= await prefs.getString('adminusermobile');
+
+    var time=DateTime.now().toString().split(' ');
+    var ctime=time[1].toString().split('.')[0].toString().split(':')[0]+':'+time[1].toString().split('.')[0].toString().split(':')[1];
+    var cdate=time[0].toString().split('-')[1]+'-'+time[0].toString().split('-')[2]+'-'+time[0].toString().split('-')[0];
+print(time);
+
+    var url = Uri.parse(
+        'http://www.pandasapi.com/panda_chat/api/get_usage?reg_mob=$mob&time_stamp=$ctime $cdate&typ=IN');
+
+    var response = await http.get(
+      url,
+    );
+    print(url);
+    var jsonBody = response.body;
+    var data = json.decode(jsonBody);
+    print(data);
+    if (response.statusCode == 200) {
+      if (data['status'] == 'SUCCESS') {
+
+      } else {
+        Fiberchat.toast(data['msg']);
+      }
+      notifyListeners();
+    } else {
+      Fiberchat.toast('Sever Error occured with ${response.statusCode}');
+      notifyListeners();
+    }
+  }
+
 
   Future checkInvitation() async {
     var url = Uri.parse(
@@ -311,9 +347,11 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future getwalletdetails() async {
+  Future unstake(amt) async {
+    final prefs = await SharedPreferences.getInstance();
+    var email= await prefs.getString('adminuseremail',);
     var url = Uri.parse(
-        'http://www.pandasapi.com/panda_chat/api/get_wallet?reg_em=info@punkpanda.io');
+        'http://www.pandasapi.com/panda_chat/api/unstake_wallet?reg_em=$email&amt=$amt');
     print('hhhh'+url.toString());
     var response = await http.get(
       url,
@@ -325,10 +363,42 @@ class UserProvider with ChangeNotifier {
     if (response.statusCode == 200) {
       if (data['status'] == 'SUCCESS') {
 
+         Fiberchat.toast(data['msg']);
+        notifyListeners();
+        getwalletdetails();
+
+      } else {
+
+         Fiberchat.toast(data['msg']);
+      }
+      notifyListeners();
+    } else {
+      notifyListeners();
+    }
+  }
+
+
+  Future getwalletdetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    var email= await prefs.getString('adminuseremail',);
+    var url = Uri.parse(
+        'http://www.pandasapi.com/panda_chat/api/get_wallet?reg_em=$email');
+    print('hhhh'+url.toString());
+    var response = await http.get(
+      url,
+    );
+
+    var jsonBody = response.body;
+    var data = json.decode(jsonBody);
+    print(data);
+    if (response.statusCode == 200) {
+      if (data['Status'] == 'SUCCESS') {
+        walletdetails=data;
         // Fiberchat.toast(data['msg']);
         notifyListeners();
 
       } else {
+        walletdetails={};
         // Fiberchat.toast(data['msg']);
       }
       notifyListeners();

@@ -1,4 +1,6 @@
+import 'package:fiberchat/Services/Providers/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class WalletView extends StatelessWidget {
   const WalletView({Key? key}) : super(key: key);
@@ -6,25 +8,22 @@ class WalletView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButton: Row(
+        floatingActionButton: Consumer<UserProvider>(
+        builder: (_, prov, __) =>prov.walletdetails.isEmpty?SizedBox(): Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+
             FloatingActionButton.extended(
-                onPressed: () {},
-                icon: Icon(Icons.download),
-                label: Text(
-                  '   Stake   ',
-                  style: TextStyle(color: Colors.white),
-                )),
-            FloatingActionButton.extended(
-                onPressed: () {},
+                onPressed: () {
+                  prov.unstake(prov.walletdetails['tot_bal']);
+                },
                 icon: Icon(Icons.upload),
                 label: Text(
                   '   Unstake   ',
                   style: TextStyle(color: Colors.white),
                 )),
           ],
-        ),
+        )),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         appBar: AppBar(
             actions: [
@@ -68,7 +67,13 @@ class WalletView extends StatelessWidget {
             )),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ListView(
+          child: Consumer<UserProvider>(
+    builder: (_, prov, __) =>prov.walletdetails.isEmpty?Container(
+      height: 300,
+      child: Center(
+        child: Text('No data Found'),
+      ),
+    ): ListView(
             children: [
               SizedBox(
                 height: 20,
@@ -127,7 +132,7 @@ class WalletView extends StatelessWidget {
                             height: 24,
                           ),
                           Text(
-                            '₹ 123456',
+                            '₹ ${prov.walletdetails['tot_bal']}',
                             style: TextStyle(
                               fontSize: 20.0,
                               color: Colors.white,
@@ -162,7 +167,7 @@ class WalletView extends StatelessWidget {
                 child: Column(
                   children: [
                     ListTile(
-                      trailing: Text('1222'),
+                      trailing: Text('${prov.walletdetails['stak_bal']}'),
                       leading: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
@@ -179,7 +184,7 @@ class WalletView extends StatelessWidget {
                       title: Text('Stacked'),
                     ),
                     ListTile(
-                      trailing: Text('1222'),
+                      trailing: Text('${prov.walletdetails['lock_bal']}'),
                       leading: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
@@ -196,7 +201,7 @@ class WalletView extends StatelessWidget {
                       title: Text('Locked'),
                     ),
                     ListTile(
-                      trailing: Text('1222'),
+                      trailing: Text('${prov.walletdetails['avb_bal']}'),
                       leading: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
@@ -218,93 +223,93 @@ class WalletView extends StatelessWidget {
               SizedBox(
                 height: 16,
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.8),
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            bottomLeft: Radius.circular(10)),
-                      ),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 15,
-                          ),
-                          Text(
-                            'Today',
-                            style: TextStyle(
-                              fontSize: 20.0,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(
-                            height: 9,
-                          ),
-                          Container(
-                            height: 0,
-                            width: 40,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8)),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.4),
-                        borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(10),
-                            bottomRight: Radius.circular(10)),
-                      ),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 15,
-                          ),
-                          Text(
-                            'History',
-                            style: TextStyle(
-                              fontSize: 20.0,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(
-                            height: 9,
-                          ),
-                          Container(
-                            height: 0,
-                            width: 40,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8)),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     Expanded(
+              //       child: Container(
+              //         decoration: BoxDecoration(
+              //           color: Colors.blue.withOpacity(0.8),
+              //           borderRadius: BorderRadius.only(
+              //               topLeft: Radius.circular(10),
+              //               bottomLeft: Radius.circular(10)),
+              //         ),
+              //         child: Column(
+              //           children: [
+              //             SizedBox(
+              //               height: 15,
+              //             ),
+              //             Text(
+              //               'Today',
+              //               style: TextStyle(
+              //                 fontSize: 20.0,
+              //                 color: Colors.white,
+              //                 fontWeight: FontWeight.w600,
+              //               ),
+              //             ),
+              //             SizedBox(
+              //               height: 9,
+              //             ),
+              //             Container(
+              //               height: 0,
+              //               width: 40,
+              //               decoration: BoxDecoration(
+              //                   borderRadius: BorderRadius.circular(8)),
+              //             ),
+              //             SizedBox(
+              //               height: 10,
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ),
+              //     Expanded(
+              //       child: Container(
+              //         decoration: BoxDecoration(
+              //           color: Colors.grey.withOpacity(0.4),
+              //           borderRadius: BorderRadius.only(
+              //               topRight: Radius.circular(10),
+              //               bottomRight: Radius.circular(10)),
+              //         ),
+              //         child: Column(
+              //           children: [
+              //             SizedBox(
+              //               height: 15,
+              //             ),
+              //             Text(
+              //               'History',
+              //               style: TextStyle(
+              //                 fontSize: 20.0,
+              //                 color: Colors.white,
+              //                 fontWeight: FontWeight.w600,
+              //               ),
+              //             ),
+              //             SizedBox(
+              //               height: 9,
+              //             ),
+              //             Container(
+              //               height: 0,
+              //               width: 40,
+              //               decoration: BoxDecoration(
+              //                   borderRadius: BorderRadius.circular(8)),
+              //             ),
+              //             SizedBox(
+              //               height: 10,
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              // ),
               ListView.builder(
                   physics: NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: 3,
+                  itemCount:prov.walletdetails['wall_list'].length,
                   itemBuilder: (context, index) {
                     return ListTile(
                       trailing: Column(
                         children: [
-                          Text('1222'),
+                          Text('${prov.walletdetails['wall_list'][index]['tranamt']}'),
                           Text(
                             'Completed',
                             style: TextStyle(color: Colors.green),
@@ -324,12 +329,15 @@ class WalletView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      title: Text('Punk Panda reward'),
-                      subtitle: Text('March 12 2020'),
+                      title: Text('${prov.walletdetails['wall_list'][index]['trandisc']}'),
+                      subtitle: Text('${prov.walletdetails['wall_list'][index]['timestmp']}'),
                     );
-                  })
+                  }),
+              SizedBox(
+                height: kToolbarHeight,
+              )
             ],
           ),
-        ));
+        )));
   }
 }
