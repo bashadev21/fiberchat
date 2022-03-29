@@ -265,7 +265,9 @@ class UserProvider with ChangeNotifier {
       if (data['status'] == 'SUCCESS') {
         firstname.text=data['firstname'];
         lastname.text=data['lastname'];
-
+        username.text=        firstname.text+lastname.text;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('adminuseremail', data['email']);
         verifyPhoneNumber(
             context,
             isaccountapprovalbyadminneeded,
@@ -363,15 +365,20 @@ class UserProvider with ChangeNotifier {
   }
 
 
+
+
+
   Future<Null> handleSignIn(context, isaccountapprovalbyadminneeded,
       accountApprovalMessage, prefs, issecutitysetupdone,
-      {AuthCredential? authCredential}) async {
+      {AuthCredential? authCredential,islogin=false}) async {
     // if (isLoading == false) {
     //   isLoading = true;
     //   notifyListeners();
     // }
 
     var phoneNo = (phoneCode! + usermobile.text).trim();
+    print('helllll'+phoneNo);
+    print('helllll'+mobileOTPString);
 
     AuthCredential credential;
     print(
@@ -412,7 +419,12 @@ class UserProvider with ChangeNotifier {
     // return;
     // ignore: unnecessary_null_comparison
     if (firebaseUser != null) {
-      userregister();
+      if(islogin){
+
+      }else{
+        userregister();
+      }
+
       // Check is already sign up
       final QuerySnapshot result = await FirebaseFirestore.instance
           .collection(DbPaths.collectionusers)
@@ -687,10 +699,36 @@ class UserProvider with ChangeNotifier {
 
   verifyEmailOTP(String email, String otp) async {
     var query_string = 'reg_em=' + email + '&otp=' + otp;
-    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/verify_login_otp?' + query_string);
+    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/verify_reg_otp?' + query_string);
    
     if (response.statusCode == 200) {
       var data = response.data;
+      debugPrint(data.toString());
+      return jsonDecode(data);
+    }
+    else {
+      Fiberchat.toast('some error occurred');
+    }
+  }
+  verifyLoginEmailOTP(String email, String otp) async {
+    final prefs = await SharedPreferences.getInstance();
+   var email= await prefs.getString('adminuseremail',);
+    var url = Uri.parse(
+        'http://www.pandasapi.com/panda_chat/api/verify_login_otp?reg_em=$email&otp=$otp&ip_addr=1.2.3.4');
+
+    var response = await http.get(
+      url,
+    );
+
+    var jsonBody = response.body;
+    var data = json.decode(jsonBody);
+    //var query_string = 'reg_em=' + email + '&otp=' + otp;
+   // var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/verifylogin_otp?reg_em=$email&otp=$otp&ip_addr=1.2.3.4');
+
+    if (response.statusCode == 200) {
+      var data = response.body;
+      print(data);
+      otpfield.clear();
       debugPrint(data.toString());
       return jsonDecode(data);
     }

@@ -102,13 +102,13 @@ class _LoginMainViewState extends State<LoginMainView> {
                               Fiberchat.toast('Enter valid otp !');
                             } else {
                               var verifyResult =
-                                  await userProvider.verifyEmailOTP(
+                                  await userProvider.verifyLoginEmailOTP(
                                       userProvider.userEmail.text.trim(),
                                       userProvider.otpfield.text);
 
                               if (verifyResult != null) {
                                 if (verifyResult['status'] == 'SUCCESS') {
-                                  userProvider.loginViewController.animateToPage(2,
+                                  userProvider.loginViewController.nextPage(
                                       duration: Duration(milliseconds: 500),
                                       curve: Curves.ease);
                                 }
@@ -116,26 +116,27 @@ class _LoginMainViewState extends State<LoginMainView> {
                               }
                             }
                           } else if (userProvider.loginViewIndex == 2) {
-                            if (userProvider.usermobile.text.isEmpty) {
-                              Fiberchat.toast('Please enter mobile number !');
-                            } else {
-
-
-                              if (userProvider.isverficationsent) {
-                                userProvider.loginViewController.animateToPage(
-                                    3,
-                                    duration: Duration(milliseconds: 500),
-                                    curve: Curves.ease);
-                              }
-                            }
-                          } else if (userProvider.loginViewIndex == 3) {
-                            userProvider.username.text =  widget.prefs.getString(Dbkeys.nickname).toString();
+                            // if (userProvider.usermobile.text.isEmpty) {
+                            //   Fiberchat.toast('Please enter mobile number !');
+                            // } else {
+                            //
+                            //
+                            //   if (userProvider.isverficationsent) {
+                            //     userProvider.loginViewController.animateToPage(
+                            //         3,
+                            //         duration: Duration(milliseconds: 500),
+                            //         curve: Curves.ease);
+                            //   }
+                            // }
                             userProvider.handleSignIn(
                                 context,
                                 widget.isaccountapprovalbyadminneeded,
                                 widget.accountApprovalMessage,
                                 widget.prefs,
-                                widget.issecutitysetupdone);
+                                widget.issecutitysetupdone,islogin: true);
+                          } else if (userProvider.loginViewIndex == 3) {
+                           // userProvider.username.text =  widget.prefs.getString(Dbkeys.nickname).toString();
+
                           }
                         },
                         child: userProvider.isLoading
