@@ -79,6 +79,7 @@ class WalletView extends StatelessWidget {
                 height: 20,
               ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Container(
@@ -132,7 +133,7 @@ class WalletView extends StatelessWidget {
                             height: 24,
                           ),
                           Text(
-                            '₹ ${prov.walletdetails['tot_bal']}',
+                            'ppm ${prov.walletdetails['tot_bal'].toString().substring(0,5)} ...',
                             style: TextStyle(
                               fontSize: 20.0,
                               color: Colors.white,
@@ -181,7 +182,7 @@ class WalletView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      title: Text('Stacked'),
+                      title: Text('staked'),
                     ),
                     ListTile(
                       trailing: Text('${prov.walletdetails['lock_bal']}'),
