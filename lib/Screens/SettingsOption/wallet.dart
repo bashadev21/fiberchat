@@ -136,12 +136,14 @@ class WalletView extends StatelessWidget {
                                     SizedBox(
                                       height: 24,
                                     ),
-                                    Text(
-                                      ' ppm ${prov.walletdetails['tot_bal'].toString().substring(0, 5)} ...',
-                                      style: TextStyle(
-                                        fontSize: 20.0,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
+                                    FittedBox(
+                                      child: Text(
+                                        ' ppm ${prov.walletdetails['tot_bal'].toString()}',
+                                        style: TextStyle(
+                                          fontSize: 20.0,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                     SizedBox(
@@ -310,7 +312,7 @@ class WalletView extends StatelessWidget {
                         //     ),
                         //   ],
                         // ),
-                        ListView.builder(
+                      if(prov.walletdetails['wall_list'].length!=0)  ListView.builder(
                             physics: NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
                             itemCount: prov.walletdetails['wall_list'].length,
