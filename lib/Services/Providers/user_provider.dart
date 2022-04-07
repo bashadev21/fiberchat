@@ -311,7 +311,7 @@ print(time);
       if (data['status'] == 'SUCCESS') {
 
       } else {
-        // Fiberchat.toast(data['msg']);
+        Fiberchat.toast(data['msg']);
       }
       notifyListeners();
     } else {
@@ -390,7 +390,7 @@ print(time);
 
     var jsonBody = response.body;
     var data = json.decode(jsonBody);
-    print('wallllll'+data.toString());
+    print(data);
     if (response.statusCode == 200) {
       if (data['Status'] == 'SUCCESS') {
         walletdetails=data;
@@ -422,7 +422,6 @@ print(time);
       if (data['status'] == 'SUCCESS') {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('adminuseremail', userEmail.text);
-
         // Fiberchat.toast(data['msg']);
         notifyListeners();
 
@@ -623,7 +622,6 @@ print(time);
                       prefs: prefs,
                     ))));
         await prefs.setString(Dbkeys.isSecuritySetupDone, phoneNo);
-        await prefs.setString('adminusermobile', usermobile.text);
         await subscribeToNotification(documents[0][Dbkeys.phone], true);
 
         //   },

@@ -142,10 +142,10 @@ class _AudioCallState extends State<AudioCall> {
     configuration.dimensions = VideoDimensions(height: 1920, width: 1080);
     await _engine.setVideoEncoderConfiguration(configuration);
     await _engine.joinChannel(
-        token,
-        'Punk Panda',
+        "0060092be759afc47cca591a66e0f54d655IABH24Z6dGg+YmR6OG0S2yhq0yhJsbxSXP0arSuJ+D/ZPvGZUYQAAAAAEABQyPoB/OpPYgEAAQD86k9i",
+        'new_video',
         null,
-        uid);  
+        0);
   }
 
   Future<void> _initAgoraRtcEngine() async {
