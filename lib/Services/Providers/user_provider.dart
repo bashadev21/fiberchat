@@ -85,28 +85,18 @@ class UserProvider with ChangeNotifier {
   getCurrentCallUID() {
     return currentCallUID;
   }
-
   getRTCToken(bool isPublisher) async {
 
-    var response = await Dio().post('https://rudr-agora-rtc-token-gen.herokuapp.com/rtctoken', 
-    data: {
-      "isPublisher": isPublisher,
-      "channel": "Punk Panda"
-    });
-    
-    if (response.statusCode == 200) {
-
-      print('RTC TOKEN RECIEVED:');
-      print(response.data['token']);
-
-      // Update Token in User Provider
-      currentCallToken = response.data['token'];
-      currentCallUID = response.data['uid'];
-    }
-    else {
-      Fiberchat.toast('some error occurred');
-    }
+    var response = await http.get(Uri.parse('http://punkpanda.teckzy.co.in/sample/RtcTokenBuilderSample.php'),);
+    if(response.statusCode==200){
+      var responsedata =jsonDecode(response.body);
+      currentCallToken = responsedata[0]["token_with_int_uid"];
+      currentCallUID = responsedata[0]["token_with_user_account"];
+    }else {
+         Fiberchat.toast('some error occurred');
+       }
   }
+
 
   setdeviceinfo() async {
     if (Platform.isAndroid == true) {
@@ -295,7 +285,7 @@ class UserProvider with ChangeNotifier {
     var time=DateTime.now().toString().split(' ');
     var ctime=time[1].toString().split('.')[0].toString().split(':')[0]+':'+time[1].toString().split('.')[0].toString().split(':')[1];
     var cdate=time[0].toString().split('-')[1]+'-'+time[0].toString().split('-')[2]+'-'+time[0].toString().split('-')[0];
-print(time);
+//print(time);
 
     var url = Uri.parse(
         'http://www.pandasapi.com/panda_chat/api/get_usage?reg_mob=$mob&time_stamp=$ctime $cdate&typ=IN');
@@ -303,10 +293,10 @@ print(time);
     var response = await http.get(
       url,
     );
-    print(url);
+    //print(url);
     var jsonBody = response.body;
     var data = json.decode(jsonBody);
-    print(data);
+    //print(data);
     if (response.statusCode == 200) {
       if (data['status'] == 'SUCCESS') {
 
