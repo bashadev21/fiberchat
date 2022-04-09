@@ -17,6 +17,8 @@ import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:fiberchat/Configs/Enum.dart';
 import 'package:share/share.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Fiberchat {
   static String? getNickname(Map<String, dynamic> user) =>
@@ -39,11 +41,19 @@ class Fiberchat {
     }
   }
 
-  static void invite(BuildContext context) {
+  static Future<void> invite(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    var email= await prefs.getString('adminuseremail',);
+    String ref_code = '';
+    var response = await http.get(Uri.parse('http://www.pandasapi.com/panda_chat/api/get_ref_code?reg_em='+email!),);
+    if(response.statusCode==200){
+      var responsedata =jsonDecode(response.body);
+      ref_code = responsedata['ref_code'];
+    }
     final observer = Provider.of<Observer>(context, listen: false);
     String multilingualtext = Platform.isIOS
-        ? '${getTranslated(context, 'letschat')} $Appname, ${getTranslated(context, 'joinme')} - ${observer.iosapplink}'
-        : '${getTranslated(context, 'letschat')} $Appname, ${getTranslated(context, 'joinme')} -  ${observer.androidapplink}';
+        ? '${getTranslated(context, 'letschat')} $Appname, ${getTranslated(context, 'joinme')} - ${ref_code}'
+        : '${getTranslated(context, 'letschat')} $Appname, ${getTranslated(context, 'joinme')} -  ${ref_code}';
     Share.share(observer.isCustomAppShareLink == true
         ? (Platform.isAndroid
             ? observer.appShareMessageStringAndroid == ''

@@ -90,8 +90,8 @@ class UserProvider with ChangeNotifier {
     var response = await http.get(Uri.parse('http://punkpanda.teckzy.co.in/sample/RtcTokenBuilderSample.php'),);
     if(response.statusCode==200){
       var responsedata =jsonDecode(response.body);
-      currentCallToken = responsedata[0]["token_with_int_uid"];
-      currentCallUID = responsedata[0]["token_with_user_account"];
+      currentCallToken = responsedata[0]["token_with_user_account"];
+      currentCallUID = responsedata[0]["token_with_int_uid"];
     }else {
          Fiberchat.toast('some error occurred');
        }
