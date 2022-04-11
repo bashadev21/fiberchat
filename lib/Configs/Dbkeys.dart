@@ -42,6 +42,7 @@ class Dbkeys {
   static final String newapplinkandroid = 'newapplinkandroid';
   static final String newapplinkios = 'newapplinkios';
   static final String newapplinkweb = 'newapplinkweb';
+  static final String websitelinkweb = 'https://www.punkpanda.io';
 
   static final String iscallsallowed = 'iscallsallowed';
   static final String ismediamessageallowed = 'ismediamessageallowed';

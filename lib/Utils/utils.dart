@@ -52,19 +52,19 @@ class Fiberchat {
     }
     final observer = Provider.of<Observer>(context, listen: false);
     String multilingualtext = Platform.isIOS
-        ? '${getTranslated(context, 'letschat')} $Appname, ${getTranslated(context, 'joinme')} - ${ref_code}'
-        : '${getTranslated(context, 'letschat')} $Appname, ${getTranslated(context, 'joinme')} -  ${ref_code}';
+        ? '${getTranslated(context, 'letschat')} $Appname ${getTranslated(context, 'referaltext')} ${ref_code} ${getTranslated(context, 'joinme')} ${Dbkeys.websitelinkweb} '
+        : '${getTranslated(context, 'letschat')} $Appname  ${getTranslated(context, 'referaltext')} ${ref_code} ${getTranslated(context, 'joinme')} ${Dbkeys.websitelinkweb}';
     Share.share(observer.isCustomAppShareLink == true
         ? (Platform.isAndroid
             ? observer.appShareMessageStringAndroid == ''
                 ? multilingualtext
-                : observer.appShareMessageStringAndroid
+            : observer.appShareMessageStringAndroid
             : Platform.isIOS
                 ? observer.appShareMessageStringiOS == ''
                     ? multilingualtext
                     : observer.appShareMessageStringiOS
-                : multilingualtext)
-        : multilingualtext);
+                : multilingualtext )
+        : multilingualtext );
   }
 
   static Widget avatar(Map<String, dynamic>? user,
