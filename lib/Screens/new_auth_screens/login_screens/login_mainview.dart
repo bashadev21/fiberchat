@@ -162,6 +162,10 @@ class _LoginMainViewState extends State<LoginMainView> {
               ),
               Row(
                 children: [
+                  IconButton(
+                    onPressed: ()=>Navigator.pop(context),
+                    icon: Icon(Icons.arrow_back_ios,color: fiberchatBlue,),
+                  ),
                   Text(
                     'WELCOME TO PUNK PANDA',
                     style: TextStyle(

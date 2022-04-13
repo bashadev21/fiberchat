@@ -36,7 +36,7 @@ class FirstViewAuth extends StatefulWidget {
 
 class _FirstViewAuthState extends State<FirstViewAuth> {
   proceedSignUp(context) {
-    unawaited(Navigator.pushReplacement(
+    unawaited(Navigator.push(
         context,
         new MaterialPageRoute(
             builder: (context) => new MainViewAuth(
@@ -51,7 +51,7 @@ class _FirstViewAuthState extends State<FirstViewAuth> {
   }
 
   proceedSignIn(context) {
-    unawaited(Navigator.pushReplacement(
+    unawaited(Navigator.push(
         context,
         new MaterialPageRoute(
             builder: (context) => new LoginMainView(
