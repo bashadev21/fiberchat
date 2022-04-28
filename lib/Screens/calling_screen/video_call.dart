@@ -126,7 +126,7 @@ class _VideoCallState extends State<VideoCall> {
     VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
     configuration.dimensions = VideoDimensions(height: 1920, width: 1080);
     await _engine.setVideoEncoderConfiguration(configuration);
-    await _engine.joinChannel(token, 'new_video', null, uid);
+    await _engine.joinChannel(token, 'Punk Panda New', null, uid);
   }
 
   Future<void> _initAgoraRtcEngine() async {

@@ -87,7 +87,7 @@ class UserProvider with ChangeNotifier {
   }
   getRTCToken(bool isPublisher) async {
 
-    var response = await http.get(Uri.parse('http://punkpanda.teckzy.co.in/sample/RtcTokenBuilderSample.php'),);
+    var response = await http.get(Uri.parse('http://punk.teckzy.co.in/sample/RtcTokenBuilderSample.php'),);
     if(response.statusCode==200){
       var responsedata =jsonDecode(response.body);
       currentCallToken = responsedata[0]["token_with_user_account"];
