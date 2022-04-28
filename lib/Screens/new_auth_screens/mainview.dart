@@ -168,6 +168,10 @@ class _MainViewAuthState extends State<MainViewAuth> {
               ),
               Row(
                 children: [
+                  IconButton(
+                    onPressed: ()=>Navigator.pop(context),
+                    icon: Icon(Icons.arrow_back_ios,color: fiberchatBlue,),
+                  ),
                   Text(
                     'WELCOME TO PUNK PANDA',
                     style: TextStyle(
