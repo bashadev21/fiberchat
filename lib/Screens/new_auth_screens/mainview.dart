@@ -169,7 +169,10 @@ class _MainViewAuthState extends State<MainViewAuth> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: ()=>Navigator.pop(context),
+                    onPressed: (){
+                      userProvider.currentIndex=0;
+Navigator.pop(context);
+                    },
                     icon: Icon(Icons.arrow_back_ios,color: fiberchatBlue,),
                   ),
                   Text(

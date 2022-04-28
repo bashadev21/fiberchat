@@ -74,7 +74,7 @@ class NameWidget extends StatelessWidget {
                 ),
               ],
             ),
-            Column(
+            /*Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -90,7 +90,7 @@ class NameWidget extends StatelessWidget {
                   style: TextStyle(fontSize: 19),
                 ),
               ],
-            ),
+            ),*/
             SizedBox(
               height: 10,
             ),

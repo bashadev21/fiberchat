@@ -780,6 +780,7 @@ class UserProvider with ChangeNotifier {
       var email= await prefs.getString('adminuseremail',);
       var url = Uri.parse(
           'http://www.pandasapi.com/panda_chat/api/verify_login_otp?reg_em=$email&otp=$otp&ip_addr=1.2.3.4');
+          print(url.toString());
 
       var response = await http.get(
         url,

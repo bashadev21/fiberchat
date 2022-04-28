@@ -100,11 +100,14 @@ class _LoginMainViewState extends State<LoginMainView> {
                           } else if (userProvider.loginViewIndex == 1) {
                             if (userProvider.otpfield.text.length != 6) {
                               Fiberchat.toast('Enter valid otp !');
+                              print('valllll');
                             } else {
                               var verifyResult =
                                   await userProvider.verifyLoginEmailOTP(
                                       userProvider.userEmail.text.trim(),
                                       userProvider.otpfield.text);
+                              print('calllll');
+
 
                               if (verifyResult != null) {
                                 if (verifyResult['status'] == 'SUCCESS') {
@@ -163,7 +166,10 @@ class _LoginMainViewState extends State<LoginMainView> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: ()=>Navigator.pop(context),
+                    onPressed: (){
+                        userProvider.currentIndex=0;
+Navigator.pop(context);
+                    },
                     icon: Icon(Icons.arrow_back_ios,color: fiberchatBlue,),
                   ),
                   Text(

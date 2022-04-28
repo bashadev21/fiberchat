@@ -54,23 +54,23 @@ class EmailWiget extends StatelessWidget {
                 ),
               ],
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Note:',
-                      style: TextStyle(color: fiberchatBlue, fontSize: 21),
-                    ),
-                  ],
-                ),
-                Text(
-                  'Ensure you enter the right email id as you will receive OTP for verifying your email id.',
-                  style: TextStyle(fontSize: 19),
-                ),
-              ],
-            ),
+            // Column(
+            //   crossAxisAlignment: CrossAxisAlignment.start,
+            //   children: [
+            //     Row(
+            //       children: [
+            //         Text(
+            //           'Note:',
+            //           style: TextStyle(color: fiberchatBlue, fontSize: 21),
+            //         ),
+            //       ],
+            //     ),
+            //     Text(
+            //       'Ensure you enter the right email id as you will receive OTP for verifying your email id.',
+            //       style: TextStyle(fontSize: 19),
+            //     ),
+            //   ],
+            // ),
             SizedBox(
               height: 10,
             ),

@@ -89,7 +89,7 @@ class _LoginMobileWidgetState extends State<LoginMobileWidget> {
               ),
             ],
           ),
-          Column(
+          /*Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -105,7 +105,7 @@ class _LoginMobileWidgetState extends State<LoginMobileWidget> {
                 style: TextStyle(fontSize: 19),
               ),
             ],
-          ),
+          ),*/
           SizedBox(
             height: 10,
           ),

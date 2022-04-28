@@ -15,10 +15,12 @@ class WalletView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       FloatingActionButton.extended(
-                          onPressed: () {
-                            prov.unstake(prov.walletdetails['tot_bal']);
-                          },
+                          // onPressed: () {
+                          //   prov.unstake(prov.walletdetails['tot_bal']);
+                          // },
+                          onPressed: null,
                           icon: Icon(Icons.upload),
+                          backgroundColor: Colors.grey[400],
                           label: Text(
                             '   Unstake   ',
                             style: TextStyle(color: Colors.white),

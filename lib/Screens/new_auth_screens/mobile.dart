@@ -97,7 +97,7 @@ class _MobileWidgetState extends State<MobileWidget> {
               ),
             ],
           ),
-          Column(
+          /*Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -113,7 +113,7 @@ class _MobileWidgetState extends State<MobileWidget> {
                 style: TextStyle(fontSize: 19),
               ),
             ],
-          ),
+          ),*/
 
           SizedBox(
             height: 10,
