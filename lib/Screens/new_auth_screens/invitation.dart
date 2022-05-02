@@ -51,6 +51,9 @@ class _InvitationWidgetState extends State<InvitationWidget> {
                   onChanged: (o) {
                     setState(() {
                       print( userProvider.refCode.text);
+                      if(o.length==8){
+                        userProvider.checkInvitation(isnav: false);
+                      }
                     });
 
                   },
@@ -96,7 +99,7 @@ class _InvitationWidgetState extends State<InvitationWidget> {
                     userProvider.checkInvitation();
                   }
 
-                  }, child: Text('      C H E C K     '),)
+                  }, child: Text('       N E X T      '),)
 
             ],
           ),

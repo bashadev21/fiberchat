@@ -311,7 +311,7 @@ class UserProvider with ChangeNotifier {
   }
 
 
-  Future checkInvitation() async {
+  Future checkInvitation({isnav=true}) async {
     var url = Uri.parse(
         'http://www.pandasapi.com/panda_chat/api/check_ref_code?ref_code=${refCode.text}');
 
@@ -326,8 +326,11 @@ class UserProvider with ChangeNotifier {
       if (data['status'] == 'SUCCESS') {
         invitationame..text=data['msg'];
         notifyListeners();
-        controller.animateToPage(1,
-            duration: Duration(milliseconds: 500), curve: Curves.ease);
+        if(isnav){
+          controller.animateToPage(1,
+              duration: Duration(milliseconds: 500), curve: Curves.ease);
+        }
+
       } else {
         Fiberchat.toast(data['msg']);
       }
