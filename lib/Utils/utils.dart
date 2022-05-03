@@ -21,6 +21,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Fiberchat {
+
   static String? getNickname(Map<String, dynamic> user) =>
       user[Dbkeys.aliasName] ?? user[Dbkeys.nickname];
 
@@ -41,6 +42,9 @@ class Fiberchat {
     }
   }
 
+
+
+
   static Future<void> invite(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     var email= await prefs.getString('adminuseremail',);
@@ -52,8 +56,8 @@ class Fiberchat {
     }
     final observer = Provider.of<Observer>(context, listen: false);
     String multilingualtext = Platform.isIOS
-        ? '${getTranslated(context, 'letschat')} $Appname ${getTranslated(context, 'referaltext')} ${ref_code} ${getTranslated(context, 'joinme')} ${Dbkeys.websitelinkweb} '
-        : '${getTranslated(context, 'letschat')} $Appname  ${getTranslated(context, 'referaltext')} ${ref_code} ${getTranslated(context, 'joinme')} ${Dbkeys.websitelinkweb}';
+        ? 'Hi, join me at punkpanda chat and earn crypto. www.punkpanda.io Download the app from playstore and use my invite code ${ref_code}'
+        : 'Hi, join me at punkpanda chat and earn crypto. www.punkpanda.io Download the app from playstore and use my invite code ${ref_code}';
     Share.share(observer.isCustomAppShareLink == true
         ? (Platform.isAndroid
             ? observer.appShareMessageStringAndroid == ''

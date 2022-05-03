@@ -18,6 +18,7 @@ import 'package:fiberchat/Utils/utils.dart';
 import 'package:fiberchat/widgets/MyElevatedButton/MyElevatedButton.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'wallet.dart';
@@ -120,7 +121,9 @@ class _SettingsOptionState extends State<SettingsOption> {
                           ),
                         ),
                         trailing: IconButton(
-                            onPressed: () {
+                            onPressed: () async{
+                              final prefs = await SharedPreferences.getInstance();
+                              userProvider.sponName=  prefs.getString('sponcername').toString();
                               userProvider.sendtime();
                               widget.onTapEditProfile();
                             },
@@ -149,7 +152,9 @@ class _SettingsOptionState extends State<SettingsOption> {
                         ),
                       ),
                       trailing: IconButton(
-                          onPressed: () {
+                          onPressed: () async{
+                            final prefs = await SharedPreferences.getInstance();
+                            userProvider.sponName=  prefs.getString('sponcername').toString();
                             userProvider.sendtime();
                             widget.onTapEditProfile();
                           },
@@ -161,7 +166,9 @@ class _SettingsOptionState extends State<SettingsOption> {
           ),
           Divider(),
           ListTile(
-            onTap: () {
+            onTap: ()async {
+              final prefs = await SharedPreferences.getInstance();
+              userProvider.sponName=  prefs.getString('sponcername').toString();
               userProvider.sendtime();
               widget.onTapEditProfile();
             },

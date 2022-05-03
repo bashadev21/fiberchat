@@ -1217,7 +1217,10 @@ class HomepageState extends State<Homepage>
                                   iconData: Icons.more_horiz, title: "Settings")
                             ],
                             onTabChangedListener: (position) {
+
                               setState(() {
+                                userProvider.refrrrID(context);
+
                                 widget.currentindex = position;
                               });
                             },

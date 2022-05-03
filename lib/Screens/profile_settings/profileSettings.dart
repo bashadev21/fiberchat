@@ -21,6 +21,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fiberchat/Configs/Enum.dart';
 
+import '../../Services/Providers/user_provider.dart';
+
 class ProfileSetting extends StatefulWidget {
   final bool? biometricEnabled;
   final AuthenticationType? type;
@@ -341,6 +343,38 @@ class ProfileSettingState extends State<ProfileSetting> {
                             labelText: getTranslated(
                                 this.context, 'enter_mobilenumber')),
                       )),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      Consumer<UserProvider>(
+                          builder: (_, prov, __) =>  ListTile(
+                            title: TextFormField(
+
+                                readOnly: true,
+                                initialValue: prov.sponName.toString(),
+                                decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.all(6),
+                                    labelStyle: TextStyle(height: 0.8),
+                                    labelText: 'Sponsored By')),
+                          )),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      Consumer<UserProvider>(
+    builder: (_, prov, __) =>  ListTile(
+                          title: TextFormField(
+
+                            readOnly: true,
+initialValue: prov.ref_code_ID.toString(),
+                            decoration: InputDecoration(
+                                contentPadding: EdgeInsets.all(6),
+                                labelStyle: TextStyle(height: 0.8),
+                                labelText: 'Your referral code')),
+                          )),
+                     ListTile(
+                       title:   Text('*use this code to invite your friends and family to punk panda'),
+                     ),
+
                       IsBannerAdShow == true &&
                               observer.isadmobshow == true &&
                               adWidget != null

@@ -37,6 +37,8 @@ class UserProvider with ChangeNotifier {
   // --
 
   var currentIndex = 0;
+  var sponName='';
+  var ref_code_ID='';
   PageController controller =
       PageController(viewportFraction: 1, keepPage: true);
 
@@ -260,6 +262,7 @@ class UserProvider with ChangeNotifier {
         username.text=firstname.text+lastname.text;
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('adminuseremail', data['email']);
+        await prefs.setString('sponcername', data['sponsor_name']);
         await prefs.setString('adminusermobile', usermobile.text);
         verifyPhoneNumber(
             context,
@@ -309,7 +312,19 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+  void refrrrID(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    var email= await prefs.getString('adminuseremail',);
 
+    var response = await http.get(Uri.parse('http://www.pandasapi.com/panda_chat/api/get_ref_code?reg_em='+email!),);
+    if(response.statusCode==200){
+      var responsedata =jsonDecode(response.body);
+      print(responsedata);
+      ref_code_ID = responsedata['ref_code'];
+      notifyListeners();
+    }
+
+  }
 
   Future checkInvitation({isnav=true}) async {
     var url = Uri.parse(
@@ -415,6 +430,8 @@ class UserProvider with ChangeNotifier {
       if (data['status'] == 'SUCCESS') {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('adminuseremail', userEmail.text);
+        await prefs.setString('sponcername', data['sponsor_name']);
+
         // Fiberchat.toast(data['msg']);
         notifyListeners();
 
