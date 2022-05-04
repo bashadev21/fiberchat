@@ -37,9 +37,9 @@ const dynamic RateAppUrlAndroid =
 const dynamic RateAppUrlIOS =
     null; // Once the database is written, It can only be changed from Admin App OR directly inside Firestore database - appsettings/userapp document.
 const TERMS_CONDITION_URL =
-    'YOUR_TNC'; // Once the database is written, It can only be changed from Admin App OR directly inside Firestore database - appsettings/userapp document.
+    'https://punkpanda.io/terms-of-use/'; // Once the database is written, It can only be changed from Admin App OR directly inside Firestore database - appsettings/userapp document.
 const PRIVACY_POLICY_URL =
-    'YOUR_PRIVACY_POLICY'; // Once the database is written, It can only be changed from Admin App OR directly inside Firestore database - appsettings/userapp document.
+    'https://punkpanda.io/privacy-policy-2/'; // Once the database is written, It can only be changed from Admin App OR directly inside Firestore database - appsettings/userapp document.
 //--
 int maxChatMessageDocsLoadAtOnceForGroupChatAndBroadcastLazyLoading =
     20; //Minimum Value should be 15.

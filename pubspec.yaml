@@ -1,7 +1,7 @@
 name: fiberchat #changing it will force you to change appname in import statement inside every .dart file.
 description: Chats & Calling app
 
-version: 1.0.38+40
+version: 1.0.50+51
 
 environment:
   sdk: ">=2.12.0 <3.0.0"

@@ -1,5 +1,6 @@
 import 'package:fiberchat/Services/Providers/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 class WalletView extends StatelessWidget {
@@ -31,7 +32,9 @@ class WalletView extends StatelessWidget {
         appBar: AppBar(
             actions: [
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  Fluttertoast.showToast(msg: 'withdraw will be allowed shortly');
+                },
                 child: Row(
                   children: [
                     Icon(
