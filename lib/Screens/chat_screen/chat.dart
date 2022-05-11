@@ -7,9 +7,11 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fiberchat/Configs/optional_constants.dart';
+import 'package:fiberchat/Screens/Groups/AddContactsToGroup.dart';
 import 'package:fiberchat/Screens/chat_screen/Widget/location_pick_screen.dart';
 import 'package:fiberchat/Screens/chat_screen/utils/uploadMediaWithProgress.dart';
 import 'package:fiberchat/Screens/contact_screens/SelectContactsToForward.dart';
+import 'package:fiberchat/Screens/contact_screens/SmartContactsPage.dart';
 import 'package:fiberchat/Screens/security_screens/security.dart';
 import 'package:fiberchat/Services/Admob/admob.dart';
 import 'package:fiberchat/Services/Providers/user_provider.dart';
@@ -938,6 +940,41 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         builder: (context) {
           return SimpleDialog(children: tiles);
         });
+  }
+  Future<void> forwardmesg() async {
+    print("selectedlist");
+    Navigator.of(context).pop();
+
+
+
+  }
+
+  Future<void> replaymesg() async {
+    print("selectedlist");
+    Navigator.of(context).pop();
+    selectedMessageDocs.forEach((mssgDoc) {
+      List<dynamic> phoneList = mssgDoc[Dbkeys.userStarList];
+      if (!phoneList.contains(currentUser![Dbkeys.phone])) {
+        phoneList.add(currentUser![Dbkeys.phone]);
+      }
+      mssgDoc[Dbkeys.userStarList] = phoneList;
+    });
+    List<Map<String, dynamic>> tempList = List.from(selectedMessageDocs);
+    selectedMessageDocs.clear();
+    setState(() {});
+    for (int i = 0; i < tempList.length; i++) {
+      Map<String, dynamic> mssgDoc = tempList[i];
+      await FirebaseFirestore.instance
+          .collection(DbPaths.collectionmessages)
+          .doc(chatId)
+          .collection(chatId!)
+          .doc('${mssgDoc[Dbkeys.timestamp]}')
+          .get()
+          .then((chatDoc) async {
+        print(chatDoc);
+      });
+    }
+
   }
 
   Future<void> _msgStarRated() async {
@@ -5659,15 +5696,24 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         ),
                         actions: [
                           IconButton(
+                            onPressed: replaymesg,
+                            icon: Icon(Icons.reply),
+                          ),
+                          IconButton(
                             onPressed: _msgStarRated,
                             icon: Icon(Icons.star),
-                          ), IconButton(
+                          ),
+                          IconButton(
                             onPressed: _msgUnStarRated,
                             icon: Icon(Icons.star_border),
                           ),
                           IconButton(
                             onPressed: _showDeleteDialog,
                             icon: Icon(Icons.delete),
+                          ),
+                          IconButton(
+                            onPressed: forwardmesg,
+                            icon: Icon(Icons.forward),
                           ),
                           SizedBox(width: 5),
                         ],
