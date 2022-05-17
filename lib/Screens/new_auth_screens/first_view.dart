@@ -80,25 +80,33 @@ class _FirstViewAuthState extends State<FirstViewAuth> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   FlatButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)
+                    ),
                     onPressed: () {
                       proceedSignIn(context);
                     },
                     color: fiberchatBlue,
                     child: Text(
-                      'Sign In',
+                      '  Sign In  ',
                       style: TextStyle(
                         color: Colors.white,
+                        fontSize: 18
                       ),
                     ),
                   ),
                   FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)
+                    ),
                     onPressed: () {
                       proceedSignUp(context);
                     },
                     color: Colors.orangeAccent,
                     child: Text(
-                      'Sign Up',
+                      '  Sign Up  ',
                       style: TextStyle(
+                        fontSize: 18,
                         color: Colors.white,
                       ),
                     ),
