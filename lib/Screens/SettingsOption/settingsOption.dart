@@ -1,5 +1,6 @@
 //*************   © Copyrighted by Thinkcreative_Technologies. An Exclusive item of Envato market. Make sure you have purchased a Regular License OR Extended license for the Source Code from Envato to use this product. See the License Defination attached with source code. *********************
 
+import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fiberchat/Configs/Dbkeys.dart';
@@ -21,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 import 'panda_pals.dart';
 import 'wallet.dart';
@@ -46,6 +48,7 @@ class SettingsOption extends StatefulWidget {
 
 class _SettingsOptionState extends State<SettingsOption> {
   late Stream myDocStream;
+  var email,refcodeset;
   @override
   void initState() {
     super.initState();
@@ -53,8 +56,24 @@ class _SettingsOptionState extends State<SettingsOption> {
         .collection(DbPaths.collectionusers)
         .doc(widget.currentUserNo)
         .snapshots();
+    dataforref();
   }
 
+ dataforref() async {
+   String ref_code = '';
+   final prefs = await SharedPreferences.getInstance();
+   email= await prefs.getString('adminuseremail',);
+   var response = await http.get(Uri.parse('http://www.pandasapi.com/panda_chat/api/get_ref_code?reg_em='+email!),);
+   if(response.statusCode==200){
+     var responsedata =jsonDecode(response.body);
+     ref_code = responsedata['ref_code'];
+     refcodeset = ref_code;
+   }
+
+    print(email);
+    print(refcodeset);
+
+}
   @override
   Widget build(BuildContext context) {
     var w = MediaQuery.of(context).size.width;
@@ -452,8 +471,11 @@ userProvider.sendtime();
               ),
             ),
           ),
+
           ListTile(
             onTap: () {
+              print("press");
+             // _launchURLApp();
               userProvider.sendtime();
               Fiberchat.invite(context);
             },
@@ -465,6 +487,50 @@ userProvider.sendtime();
             ),
             title: Text(
               'Share',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 16, color: fiberchatBlack),
+            ),
+          ),
+          ListTile(
+            onTap: () {
+              userProvider.sendtime();
+              if (ConnectWithAdminApp == false) {
+                launch(Refe_code+email+"&ref_code="+refcodeset);
+              } else {
+                final observer = Provider.of<Observer>(context, listen: false);
+                if (observer.tncType == 'url') {
+                  if (observer.tnc == null) {
+                    launch(Refe_code+email+"&ref_code="+refcodeset);
+                  } else {
+                    launch(observer.tnc!);
+                  }
+                } else if (observer.tncType == 'file') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (_) => PDFViewerCachedFromUrl(
+                        title: getTranslated(context, 'ref_code'),
+                        url: observer.tnc,
+                        isregistered: true,
+                      ),
+                    ),
+                  );
+                }
+              }
+            },
+
+            contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),
+            leading: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Icon(
+                Icons.image_aspect_ratio_rounded,
+                color: fiberchatgreen.withOpacity(0.75),
+                size: 26,
+              ),
+            ),
+            title: Text(
+              getTranslated(context, 'ref_code'),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 16, color: fiberchatBlack),

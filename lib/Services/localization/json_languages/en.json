@@ -88,6 +88,7 @@
     "feedback": "Wallet",
     "tutorials": "Tutorials",
     "tnc": "Terms & Conditions",
+    "ref_code": "ref_codelink",
     "pp": "Privacy Policy",
     "logout": "Logout",
     "unblockchat": "Unblock Chat",
@@ -142,8 +143,9 @@
     "setalias": "Set Alias",
     "aliasname": "Alias Name",
     "clocktime": "Your clock time is out of sync with the server time. Please set it right to continue.",
-    "letschat": "Let's chat on ",
-    "joinme": "Join me at",
+    "letschat": "Install PUNK PANDA APP. Invite Your Friends and earn.Sign up with the",
+    "joinme": "Download the app from : ",
+    "referaltext" : "Referral code:",
     "pgv": "Permission to access Gallery need to select Video.",
     "pcv": "Permission to access Camera need to select Video.",
     "pgi": "Permission to access Gallery need to select Photos",
@@ -322,5 +324,5 @@
     "selectcontacttoshare": "Select to Share",
     "maxallowed": "Maximum allowed :",
     "userhasblocked": "User has blocked your number",
-    "heyim": "Hey! I am using"
+    "heyim": "Hey! I am using",
 }
