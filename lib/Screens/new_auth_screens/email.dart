@@ -41,6 +41,7 @@ class EmailWiget extends StatelessWidget {
                   ],
                   controller: userProvider.userEmail,
                   leftrightmargin: 0,
+                  keyboardtype: TextInputType.emailAddress,
                   showIconboundary: false,
                   boxcornerradius: 5.5,
                   boxheight: 50,

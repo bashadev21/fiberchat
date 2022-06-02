@@ -60,6 +60,7 @@ class _InvitationWidgetState extends State<InvitationWidget> {
                   eachFieldPadding: const EdgeInsets.all(10),
                   eachFieldHeight: 35,
                   eachFieldWidth: 35,
+
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(
                         RegExp(r'[0-9]')),
@@ -72,7 +73,7 @@ class _InvitationWidgetState extends State<InvitationWidget> {
                    ),
                     borderRadius: BorderRadius.circular(3.0),
                   ),
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.numberWithOptions(signed: true,),
                   submittedFieldDecoration:
                   _pinPutDecoration.copyWith(
                     borderRadius: BorderRadius.circular(100.0),

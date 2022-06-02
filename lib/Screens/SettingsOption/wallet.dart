@@ -9,53 +9,53 @@ class WalletView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButton: Consumer<UserProvider>(
-            builder: (_, prov, __) => prov.walletdetails.isEmpty
-                ? SizedBox()
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      FloatingActionButton.extended(
-                          // onPressed: () {
-                          //   prov.unstake(prov.walletdetails['tot_bal']);
-                          // },
-                          onPressed: null,
-                          icon: Icon(Icons.upload),
-                          backgroundColor: Colors.grey[400],
-                          label: Text(
-                            '   Unstake   ',
-                            style: TextStyle(color: Colors.white),
-                          )),
-                    ],
-                  )),
+        // floatingActionButton: Consumer<UserProvider>(
+        //     builder: (_, prov, __) => prov.walletdetails.isEmpty
+        //         ? SizedBox()
+        //         : Row(
+        //             mainAxisAlignment: MainAxisAlignment.spaceAround,
+        //             children: [
+        //               FloatingActionButton.extended(
+        //                   // onPressed: () {
+        //                   //   prov.unstake(prov.walletdetails['tot_bal']);
+        //                   // },
+        //                   onPressed: null,
+        //                   icon: Icon(Icons.upload),
+        //                   backgroundColor: Colors.grey[400],
+        //                   label: Text(
+        //                     '   Unstake   ',
+        //                     style: TextStyle(color: Colors.white),
+        //                   )),
+        //             ],
+        //           )),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         appBar: AppBar(
             actions: [
-              InkWell(
-                onTap: () {
-                  Fluttertoast.showToast(msg: 'withdraw will be allowed shortly');
-                },
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.upload_outlined,
-                      color: Colors.black,
-                    ),
-                    SizedBox(
-                      width: 6,
-                    ),
-                    Text(
-                      'Withdraw',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 6,
-                    ),
-                  ],
-                ),
-              )
+              // InkWell(
+              //   onTap: () {
+              //     Fluttertoast.showToast(msg: 'withdraw will be allowed shortly');
+              //   },
+              //   child: Row(
+              //     children: [
+              //       Icon(
+              //         Icons.upload_outlined,
+              //         color: Colors.black,
+              //       ),
+              //       SizedBox(
+              //         width: 6,
+              //       ),
+              //       Text(
+              //         'Withdraw',
+              //         style: TextStyle(
+              //           color: Colors.black,
+              //         ),
+              //       ),
+              //       SizedBox(
+              //         width: 6,
+              //       ),
+              //     ],
+              //   ),
+              // )
             ],
             leading: BackButton(
               color: Colors.black,

@@ -44,179 +44,184 @@ class _LoginMainViewState extends State<LoginMainView> {
   Widget build(BuildContext context) {
     final UserProvider userProvider = Provider.of<UserProvider>(context);
     return SafeArea(
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.only(left: 34),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              userProvider.loginViewIndex != 0
-                  ? FloatingActionButton(
-                      onPressed: () {
-                        userProvider.loginViewController.previousPage( duration: Duration(milliseconds: 500),
-                            curve: Curves.ease);
-                      },
-                      child: Icon(Icons.arrow_back),
-                    )
-                  : SizedBox(),
-              Consumer<UserProvider>(
-                  builder: (_, prov, __) => FloatingActionButton(
-                        onPressed: () async {
-                          if (userProvider.loginViewIndex == 0) {
-                      userProvider.logincheck(                          context,
-                          widget.isaccountapprovalbyadminneeded,
-                          widget.accountApprovalMessage,
-                          widget.prefs,
-                          widget.issecutitysetupdone);
-                      // userProvider.verifyPhoneNumber(
-                      //     context,
-                      //     widget.isaccountapprovalbyadminneeded,
-                      //     widget.accountApprovalMessage,
-                      //     widget.prefs,
-                      //     widget.issecutitysetupdone);
-                            // var response =
-                            //     await userProvider.checkIfAccountExists(
-                            //         userProvider.userEmail.text.trim());
-                            // if (response != null) {
-                            //   var verificationResponse =
-                            //       await userProvider.sendVerificationEmail(
-                            //           userProvider.userEmail.text.trim(),
-                            //           '1.2.3.4');
-                            //
-                            //   if (verificationResponse != null) {
-                            //     if (verificationResponse['status'] ==
-                            //         'SUCCESS') {
-                            //       userProvider.loginViewController
-                            //           .animateToPage(1,
-                            //               duration: Duration(milliseconds: 500),
-                            //               curve: Curves.ease);
-                            //     }
-                            //     Fiberchat.toast(verificationResponse['msg']);
-                            //   }
-                            //
-                            //   Fiberchat.toast(response['msg']);
-                            // }
-                          } else if (userProvider.loginViewIndex == 1) {
-                            if (userProvider.otpfield.text.length != 6) {
-                              Fiberchat.toast('Enter valid otp !');
-                              print('valllll');
-                            } else {
-                              var verifyResult =
-                                  await userProvider.verifyLoginEmailOTP(
-                                      userProvider.userEmail.text.trim(),
-                                      userProvider.otpfield.text);
-                              print('calllll');
+      child: GestureDetector(
+        onTap: (){
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        child: Scaffold(
 
-
-                              if (verifyResult != null) {
-                                if (verifyResult['status'] == 'SUCCESS') {
-                                  userProvider.loginViewController.nextPage(
-                                      duration: Duration(milliseconds: 500),
-                                      curve: Curves.ease);
-                                }
-                                Fiberchat.toast(verifyResult['msg']);
-                              }
-                            }
-                          } else if (userProvider.loginViewIndex == 2) {
-                            // if (userProvider.usermobile.text.isEmpty) {
-                            //   Fiberchat.toast('Please enter mobile number !');
-                            // } else {
-                            //
-                            //
-                            //   if (userProvider.isverficationsent) {
-                            //     userProvider.loginViewController.animateToPage(
-                            //         3,
-                            //         duration: Duration(milliseconds: 500),
-                            //         curve: Curves.ease);
-                            //   }
-                            // }
-                            userProvider.handleSignIn(
-                                context,
-                                widget.isaccountapprovalbyadminneeded,
-                                widget.accountApprovalMessage,
-                                widget.prefs,
-                                widget.issecutitysetupdone,islogin: true);
-                          } else if (userProvider.loginViewIndex == 3) {
-                           // userProvider.username.text =  widget.prefs.getString(Dbkeys.nickname).toString();
-
-                          }
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(left: 34),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                userProvider.loginViewIndex != 0
+                    ? FloatingActionButton(
+                        onPressed: () {
+                          userProvider.loginViewController.previousPage( duration: Duration(milliseconds: 500),
+                              curve: Curves.ease);
                         },
-                        child: userProvider.isLoading
-                            ? CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : Icon(userProvider.loginViewIndex == 2
-                                ? Icons.check
-                                : Icons.arrow_forward),
-                      )),
-            ],
-          ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              SizedBox(
-                height: 20,
-              ),
-              SizedBox(
-                height: 8,
-              ),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: (){
-                        userProvider.currentIndex=0;
-Navigator.pop(context);
-                    },
-                    icon: Icon(Icons.arrow_back_ios,color: fiberchatBlue,),
-                  ),
-                  Text(
-                    'WELCOME TO PUNK PANDA',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: fiberchatBlue),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: PageView.builder(
-                    onPageChanged: (o) {
-                      setState(() {
-                        userProvider.loginViewIndex = o;
-                      });
-                    },
-                    controller: userProvider.loginViewController,
-                    itemCount: 3,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, i) {
-                      return Container(
-                        child: i == 0
-                            ?LoginMobileWidget(
-                            issecutitysetupdone:
-                            widget.issecutitysetupdone,
-                            isaccountapprovalbyadminneeded: widget
-                                .isaccountapprovalbyadminneeded,
-                            accountApprovalMessage:
+                        child: Icon(Icons.arrow_back),
+                      )
+                    : SizedBox(),
+                Consumer<UserProvider>(
+                    builder: (_, prov, __) => FloatingActionButton(
+                          onPressed: () async {
+                            if (userProvider.loginViewIndex == 0) {
+                        userProvider.logincheck(                          context,
+                            widget.isaccountapprovalbyadminneeded,
                             widget.accountApprovalMessage,
-                            prefs: widget.prefs,
-                            isblocknewlogins:
-                            widget.isblocknewlogins)
-                            : i == 1
-                                ? LoginEmailOtpWidget()
-                                : i == 2
-                                    ? LoginMobileOtpWidget()
+                            widget.prefs,
+                            widget.issecutitysetupdone);
+                        // userProvider.verifyPhoneNumber(
+                        //     context,
+                        //     widget.isaccountapprovalbyadminneeded,
+                        //     widget.accountApprovalMessage,
+                        //     widget.prefs,
+                        //     widget.issecutitysetupdone);
+                              // var response =
+                              //     await userProvider.checkIfAccountExists(
+                              //         userProvider.userEmail.text.trim());
+                              // if (response != null) {
+                              //   var verificationResponse =
+                              //       await userProvider.sendVerificationEmail(
+                              //           userProvider.userEmail.text.trim(),
+                              //           '1.2.3.4');
+                              //
+                              //   if (verificationResponse != null) {
+                              //     if (verificationResponse['status'] ==
+                              //         'SUCCESS') {
+                              //       userProvider.loginViewController
+                              //           .animateToPage(1,
+                              //               duration: Duration(milliseconds: 500),
+                              //               curve: Curves.ease);
+                              //     }
+                              //     Fiberchat.toast(verificationResponse['msg']);
+                              //   }
+                              //
+                              //   Fiberchat.toast(response['msg']);
+                              // }
+                            } else if (userProvider.loginViewIndex == 1) {
+                              if (userProvider.otpfield.text.length != 6) {
+                                Fiberchat.toast('Enter valid otp !');
+                                print('valllll');
+                              } else {
+                                var verifyResult =
+                                    await userProvider.verifyLoginEmailOTP(
+                                        userProvider.userEmail.text.trim(),
+                                        userProvider.otpfield.text);
+                                print('calllll');
 
-                                        : Container(),
-                      );
-                    }),
-              ),
-              SizedBox(
-                height: 30,
-              ),
-            ],
+
+                                if (verifyResult != null) {
+                                  if (verifyResult['status'] == 'SUCCESS') {
+                                    userProvider.loginViewController.nextPage(
+                                        duration: Duration(milliseconds: 500),
+                                        curve: Curves.ease);
+                                  }
+                                  Fiberchat.toast(verifyResult['msg']);
+                                }
+                              }
+                            } else if (userProvider.loginViewIndex == 2) {
+                              // if (userProvider.usermobile.text.isEmpty) {
+                              //   Fiberchat.toast('Please enter mobile number !');
+                              // } else {
+                              //
+                              //
+                              //   if (userProvider.isverficationsent) {
+                              //     userProvider.loginViewController.animateToPage(
+                              //         3,
+                              //         duration: Duration(milliseconds: 500),
+                              //         curve: Curves.ease);
+                              //   }
+                              // }
+                              userProvider.handleSignIn(
+                                  context,
+                                  widget.isaccountapprovalbyadminneeded,
+                                  widget.accountApprovalMessage,
+                                  widget.prefs,
+                                  widget.issecutitysetupdone,islogin: true);
+                            } else if (userProvider.loginViewIndex == 3) {
+                             // userProvider.username.text =  widget.prefs.getString(Dbkeys.nickname).toString();
+
+                            }
+                          },
+                          child: userProvider.isLoading
+                              ? CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Icon(userProvider.loginViewIndex == 2
+                                  ? Icons.check
+                                  : Icons.arrow_forward),
+                        )),
+              ],
+            ),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 20,
+                ),
+                SizedBox(
+                  height: 8,
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: (){
+                          userProvider.currentIndex=0;
+Navigator.pop(context);
+                      },
+                      icon: Icon(Icons.arrow_back_ios,color: fiberchatBlue,),
+                    ),
+                    Text(
+                      'WELCOME TO PUNK PANDA',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: fiberchatBlue),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: PageView.builder(
+                      onPageChanged: (o) {
+                        setState(() {
+                          userProvider.loginViewIndex = o;
+                        });
+                      },
+                      controller: userProvider.loginViewController,
+                      itemCount: 3,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, i) {
+                        return Container(
+                          child: i == 0
+                              ?LoginMobileWidget(
+                              issecutitysetupdone:
+                              widget.issecutitysetupdone,
+                              isaccountapprovalbyadminneeded: widget
+                                  .isaccountapprovalbyadminneeded,
+                              accountApprovalMessage:
+                              widget.accountApprovalMessage,
+                              prefs: widget.prefs,
+                              isblocknewlogins:
+                              widget.isblocknewlogins)
+                              : i == 1
+                                  ? LoginEmailOtpWidget()
+                                  : i == 2
+                                      ? LoginMobileOtpWidget()
+
+                                          : Container(),
+                        );
+                      }),
+                ),
+                SizedBox(
+                  height: 30,
+                ),
+              ],
+            ),
           ),
         ),
       ),

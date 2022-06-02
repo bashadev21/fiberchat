@@ -70,6 +70,7 @@ class UserProvider with ChangeNotifier {
   String? verificationId;
   bool isLoading = false;
   bool isLoading2 = true;
+  var adminemail='';
   bool isverficationsent = false;
   dynamic isLoggedIn = false;
   User? currentUser;
@@ -316,11 +317,13 @@ class UserProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     var email= await prefs.getString('adminuseremail',);
 
+
     var response = await http.get(Uri.parse('http://www.pandasapi.com/panda_chat/api/get_ref_code?reg_em='+email!),);
     if(response.statusCode==200){
       var responsedata =jsonDecode(response.body);
       print(responsedata);
       ref_code_ID = responsedata['ref_code'];
+      prefs.setString('ref_code', ref_code_ID.toString());
       notifyListeners();
     }
 

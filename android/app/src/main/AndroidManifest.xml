@@ -11,6 +11,7 @@
         android:name=".Application"
         android:icon="@mipmap/ic_launcher"
         android:label="Punk Panda"
+        android:usesCleartextTraffic="true"
 
         >
         <meta-data

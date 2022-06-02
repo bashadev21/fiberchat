@@ -7,6 +7,7 @@ import 'package:fiberchat/Configs/Dbpaths.dart';
 import 'package:fiberchat/Configs/Enum.dart';
 import 'package:fiberchat/Configs/app_constants.dart';
 import 'package:fiberchat/Configs/optional_constants.dart';
+import 'package:fiberchat/Screens/SettingsOption/my_ref.dart';
 import 'package:fiberchat/Screens/call_history/callhistory.dart';
 import 'package:fiberchat/Screens/calling_screen/pickup_layout.dart';
 import 'package:fiberchat/Screens/notifications/AllNotifications.dart';
@@ -21,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'panda_pals.dart';
 import 'wallet.dart';
 
 class SettingsOption extends StatefulWidget {
@@ -58,6 +60,7 @@ class _SettingsOptionState extends State<SettingsOption> {
     var w = MediaQuery.of(context).size.width;
     final observer = Provider.of<Observer>(context, listen: false);
     final UserProvider userProvider = Provider.of<UserProvider>(context);
+    userProvider.refrrrID(context);
     return PickupLayout(
         scaffold: Fiberchat.getNTPWrappedWidget(Scaffold(
       backgroundColor: Colors.white,
@@ -233,70 +236,116 @@ userProvider.sendtime();
             ),
           ),
           ListTile(
-            onTap: () {
+            onTap: ()async {
               userProvider.sendtime();
-              onTapRateApp();
+              userProvider.refrrrID(context);
+              final prefs = await SharedPreferences.getInstance();
+              userProvider.adminemail =  prefs.getString('adminuseremail',)!;
+              print('kkkkkk'+  userProvider.adminemail.toString());
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>PandaPalView()));
+
             },
             contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),
-            leading: Padding(
-              padding: const EdgeInsets.only(top: 3),
-              child: Icon(
-                Icons.star_outline_rounded,
-                color: fiberchatgreen.withOpacity(0.75),
-                size: 29,
-              ),
+            leading: Icon(
+              Icons.star_outline_rounded,
+              color: fiberchatgreen.withOpacity(0.75),
+              size: 26,
             ),
             title: Text(
-              getTranslated(context, 'rate'),
+              'Panda Pals',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 16, color: fiberchatBlack),
             ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                getTranslated(context, 'leavereview'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 14, color: fiberchatBlack.withOpacity(0.56)),
-              ),
-            ),
           ),
+          // ListTile(
+          //   onTap: () {
+          //     userProvider.sendtime();
+          //     onTapRateApp();
+          //   },
+          //   contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),
+          //   leading: Padding(
+          //     padding: const EdgeInsets.only(top: 3),
+          //     child: Icon(
+          //       Icons.star_outline_rounded,
+          //       color: fiberchatgreen.withOpacity(0.75),
+          //       size: 29,
+          //     ),
+          //   ),
+          //   title: Text(
+          //     getTranslated(context, 'rate'),
+          //     maxLines: 1,
+          //     overflow: TextOverflow.ellipsis,
+          //     style: TextStyle(fontSize: 16, color: fiberchatBlack),
+          //   ),
+          //   subtitle: Padding(
+          //     padding: const EdgeInsets.only(top: 4),
+          //     child: Text(
+          //       getTranslated(context, 'leavereview'),
+          //       maxLines: 1,
+          //       overflow: TextOverflow.ellipsis,
+          //       style: TextStyle(
+          //           fontSize: 14, color: fiberchatBlack.withOpacity(0.56)),
+          //     ),
+          //   ),
+          // ),
           ListTile(
-            onTap: () {
+            onTap: ()async {
               userProvider.sendtime();
-              Navigator.push(
-                  context,
-                  new MaterialPageRoute(
-                      builder: (context) => AllNotifications()));
+              userProvider.refrrrID(context);
+              final prefs = await SharedPreferences.getInstance();
+              userProvider.adminemail =  prefs.getString('adminuseremail',)!;
+              print('kkkkkk'+  userProvider.adminemail.toString());
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>MyRef()));
+
             },
             contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),
-            leading: Padding(
-              padding: const EdgeInsets.only(top: 3),
-              child: Icon(
-                Icons.notifications_none,
-                color: fiberchatgreen.withOpacity(0.75),
-                size: 29,
-              ),
+            leading: Icon(
+              Icons.people,
+              color: fiberchatgreen.withOpacity(0.75),
+              size: 26,
             ),
             title: Text(
-              getTranslated(context, 'allnotifications'),
+              'My Referrals',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 16, color: fiberchatBlack),
             ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                getTranslated(context, 'pmtevents'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 14, color: fiberchatBlack.withOpacity(0.56)),
-              ),
-            ),
           ),
+          // ListTile(
+          //   onTap: () {
+          //     userProvider.sendtime();
+          //     Navigator.push(
+          //         context,
+          //         new MaterialPageRoute(
+          //             builder: (context) => AllNotifications()));
+          //   },
+          //   contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),
+          //   leading: Padding(
+          //     padding: const EdgeInsets.only(top: 3),
+          //     child: Icon(
+          //       Icons.notifications_none,
+          //       color: fiberchatgreen.withOpacity(0.75),
+          //       size: 29,
+          //     ),
+          //   ),
+          //   title: Text(
+          //     getTranslated(context, 'allnotifications'),
+          //     maxLines: 1,
+          //     overflow: TextOverflow.ellipsis,
+          //     style: TextStyle(fontSize: 16, color: fiberchatBlack),
+          //   ),
+          //   subtitle: Padding(
+          //     padding: const EdgeInsets.only(top: 4),
+          //     child: Text(
+          //       getTranslated(context, 'pmtevents'),
+          //       maxLines: 1,
+          //       overflow: TextOverflow.ellipsis,
+          //       style: TextStyle(
+          //           fontSize: 14, color: fiberchatBlack.withOpacity(0.56)),
+          //     ),
+          //   ),
+          // ),
           ListTile(
             onTap: () {
               userProvider.sendtime();
@@ -410,17 +459,18 @@ userProvider.sendtime();
             },
             contentPadding: EdgeInsets.fromLTRB(30, 3, 10, 3),
             leading: Icon(
-              Icons.people_rounded,
+              Icons.share,
               color: fiberchatgreen.withOpacity(0.75),
               size: 26,
             ),
             title: Text(
-              getTranslated(context, 'share'),
+              'Share',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 16, color: fiberchatBlack),
             ),
           ),
+
           observer.isLogoutButtonShowInSettingsPage == true
               ? Divider()
               : SizedBox(),
