@@ -492,7 +492,7 @@ userProvider.sendtime();
               style: TextStyle(fontSize: 16, color: fiberchatBlack),
             ),
           ),
-          ListTile(
+       /*   ListTile(
             onTap: () {
               userProvider.sendtime();
               if (ConnectWithAdminApp == false) {
@@ -535,7 +535,7 @@ userProvider.sendtime();
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 16, color: fiberchatBlack),
             ),
-          ),
+          ),*/
 
           observer.isLogoutButtonShowInSettingsPage == true
               ? Divider()
