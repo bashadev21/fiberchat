@@ -120,7 +120,7 @@ class _GroupChatPageState extends State<GroupChatPage>
         .where(Dbkeys.groupmsgTIME, isGreaterThanOrEqualTo: widget.joinedTime)
         .orderBy(Dbkeys.groupmsgTIME, descending: true)
         .limit(maxChatMessageDocsLoadAtOnceForGroupChatAndBroadcastLazyLoading);
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       var currentpeer =
           Provider.of<CurrentChatPeer>(this.context, listen: false);
       var firestoreProvider =
@@ -320,7 +320,7 @@ class _GroupChatPageState extends State<GroupChatPage>
   @override
   void dispose() {
     super.dispose();
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     setLastSeen(false, isemojiShowing);
     subscription!.cancel();
     if (IsInterstitialAdShow == true) {
@@ -3979,7 +3979,7 @@ class _GroupChatPageState extends State<GroupChatPage>
                               return Future.value(false);
                             }
                           : () async {
-                              WidgetsBinding.instance!
+                              WidgetsBinding.instance
                                   .addPostFrameCallback((timeStamp) {
                                 var currentpeer = Provider.of<CurrentChatPeer>(
                                     this.context,

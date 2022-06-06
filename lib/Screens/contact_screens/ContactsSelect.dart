@@ -69,7 +69,7 @@ class _ContactsSelectState extends State<ContactsSelect>
     super.initState();
      getContacts();
     // WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-      WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         setInitial(context);
       });
     // });

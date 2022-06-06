@@ -78,7 +78,7 @@ class RecentChatsState extends State<RecentChats> {
     super.initState();
     Fiberchat.internetLookUp();
     print("RecentChatsState  ==>  RecentChatsState");
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final observer = Provider.of<Observer>(this.context, listen: false);
       if (IsBannerAdShow == true && observer.isadmobshow == true) {
         myBanner.load();

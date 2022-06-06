@@ -173,13 +173,13 @@ class HomepageState extends State<Homepage>
     controllerIfcallNotallowed!.index = 1;
 
     Fiberchat.internetLookUp();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
 
     LocalAuthentication().canCheckBiometrics.then((res) {
       if (res) biometricEnabled = true;
     });
     getModel();
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setPinChatList();
       controllerIfcallallowed!.addListener(() {
         if (controllerIfcallallowed!.index == 2) {
@@ -460,7 +460,7 @@ class HomepageState extends State<Homepage>
   @override
   void dispose() {
     super.dispose();
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     controllers.forEach((controller) {
       controller.close();
     });

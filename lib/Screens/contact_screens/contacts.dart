@@ -92,7 +92,7 @@ class _ContactsState extends State<Contacts>
   initState() {
     super.initState();
     getContacts();
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _appBarTitle = new Text(
         getTranslated(context, 'searchcontact'),
         style: TextStyle(

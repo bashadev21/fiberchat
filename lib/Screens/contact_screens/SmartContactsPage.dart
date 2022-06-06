@@ -46,7 +46,7 @@ class _SmartContactsPageState extends State<SmartContactsPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setInitial(context);
     });
   }

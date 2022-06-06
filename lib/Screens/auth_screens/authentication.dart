@@ -45,7 +45,7 @@ class _AuthenticateState extends State<Authenticate> {
   void initState() {
     super.initState();
     passcodeTries = widget.prefs.getInt(Dbkeys.passcodeTries) ?? 0;
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (passcodeVisible()) {
         widget.type == AuthenticationType.passcode
             ? _showLockScreen()
