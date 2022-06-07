@@ -89,7 +89,7 @@ class _StatusState extends State<Status> with AutomaticKeepAliveClientMixin {
         .doc(widget.currentUserNo)
         .snapshots();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       final observer = Provider.of<Observer>(this.context, listen: false);
       if (IsBannerAdShow == true && observer.isadmobshow == true) {
         myBanner.load();

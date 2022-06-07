@@ -64,7 +64,7 @@ class EditGroupDetailsState extends State<EditGroupDetails> {
     controllerName!.text = groupTitle!;
     controllerDesc!.text = groupDesc!;
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
       final observer = Provider.of<Observer>(this.context, listen: false);
       if (IsBannerAdShow == true && observer.isadmobshow == true) {
         myBanner.load();

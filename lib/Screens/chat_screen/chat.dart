@@ -209,13 +209,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     updateLocalUserData(_cachedModel);
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
       final observer = Provider.of<Observer>(this.context, listen: false);
       var currentpeer =
       Provider.of<CurrentChatPeer>(this.context, listen: false);
       currentpeer.setpeer(newpeerid: widget.peerNo);
       seenState = new SeenState(false);
-      WidgetsBinding.instance.addObserver(this);
+      WidgetsBinding.instance!.addObserver(this);
       chatId = '';
       unread = widget.unread;
       isLoading = false;
@@ -372,7 +372,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     super.dispose();
-    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance!.removeObserver(this);
     setLastSeen();
     // audioPlayer.stop();
     msgSubscription?.cancel();
@@ -5642,7 +5642,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             : () async {
           setLastSeen();
           WidgetsBinding.instance
-              .addPostFrameCallback((timeStamp) async {
+              !.addPostFrameCallback((timeStamp) async {
             var currentpeer = Provider.of<CurrentChatPeer>(
                 this.context,
                 listen: false);

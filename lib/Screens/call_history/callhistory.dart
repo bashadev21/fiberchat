@@ -60,7 +60,7 @@ class _CallHistoryState extends State<CallHistory> {
   void initState() {
     super.initState();
     Fiberchat.internetLookUp();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
       final observer = Provider.of<Observer>(this.context, listen: false);
       if (IsBannerAdShow == true && observer.isadmobshow == true) {
         myBanner.load();
