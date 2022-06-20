@@ -6054,8 +6054,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                     //         'userhasblocked'),
                                     //   );
                                     // } else {
-                                      ChatController.block(
-                                          currentUserNo, peerNo);
+                                     _showMyDialog();
                                       // }
                                       break;
                                     case 'unblock':
@@ -6293,6 +6292,44 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               )
                   : Container();
             },),),),),
+    );
+  }
+
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Are sure to Block?'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('the last 5 messages from this contact will forwarded to punkPanda .If you block this contact ,messages only removed from this device. '),
+                SizedBox(height: 10,),
+                Text('This contact will not be notified'),
+
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('CANCEL'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('BLOCK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                ChatController.block(
+                    currentUserNo, peerNo);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
