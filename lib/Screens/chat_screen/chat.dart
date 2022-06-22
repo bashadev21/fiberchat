@@ -56,6 +56,7 @@ import 'package:fiberchat/Screens/chat_screen/Widget/bubble.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:giphy_get/giphy_get.dart';
@@ -6054,7 +6055,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                     //         'userhasblocked'),
                                     //   );
                                     // } else {
-                                     _showMyDialog();
+                                      ChatController.block(
+                                          currentUserNo, peerNo);
+
                                       // }
                                       break;
                                     case 'unblock':
@@ -6070,6 +6073,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                           this.context, 'unblocked'));
                                       // }
 
+                                      break;
+                                    case 'report':
+                                      _showMyDialog();
                                       break;
                                     case 'tutorial':
                                       Fiberchat.toast(getTranslated(
@@ -6133,6 +6139,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                                 : getTranslated(
                                                 this.context,
                                                 'blockchat')}'),
+                                      ),
+
+                                      PopupMenuItem<String>(
+                                        value:'report',
+                                        child: Text(
+                                            'Report'),
                                       ),
                                       peer![Dbkeys.wallpaper] != null
                                           ? PopupMenuItem<String>(
@@ -6301,11 +6313,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Are sure to Block?'),
+          title: const Text('Are you sure want to Report?'),
           content: SingleChildScrollView(
             child: ListBody(
               children: const <Widget>[
-                Text('the last 5 messages from this contact will forwarded to punkPanda .If you block this contact ,messages only removed from this device. '),
+                Text('the last 5 messages from this contact will forwarded to punkPanda .If you report this contact ,messages only removed from this device. '),
                 SizedBox(height: 10,),
                 Text('This contact will not be notified'),
 
@@ -6320,11 +6332,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               },
             ),
             TextButton(
-              child: const Text('BLOCK'),
+              child: const Text('REPORT'),
               onPressed: () {
+                Fluttertoast.showToast(msg: 'Reported');
                 Navigator.of(context).pop();
-                ChatController.block(
-                    currentUserNo, peerNo);
+
               },
             ),
           ],
