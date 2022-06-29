@@ -75,9 +75,9 @@ const GiphyAPIKey =
 const Appname =
     'Punk Panda'; //app name shown evrywhere with the app where required
 const DEFAULT_COUNTTRYCODE_ISO =
-    'IN'; //default country ISO 2 letter for login screen
+    'CA'; //default country ISO 2 letter for login screen
 const DEFAULT_COUNTTRYCODE_NUMBER =
-    '+91'; //default country code number for login screen
+    '+1'; //default country code number for login screen
 const FONTFAMILY_NAME =
     null; // make sure you have registered the font in pubspec.yaml
 
