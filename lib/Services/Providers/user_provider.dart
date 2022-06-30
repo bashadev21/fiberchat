@@ -246,6 +246,7 @@ class UserProvider with ChangeNotifier {
 
 
   Future logincheck(context,isaccountapprovalbyadminneeded,accountApprovalMessage,prefs,issecutitysetupdone) async {
+    isLoading=true;
     var url = Uri.parse(
         'http://www.pandasapi.com/panda_chat/api/login_check?reg_mob=${usermobile.text}&ip_addr=1.2.3.4');
 
@@ -256,6 +257,7 @@ class UserProvider with ChangeNotifier {
     var jsonBody = response.body;
     var data = json.decode(jsonBody);
     print(data);
+    isLoading=false;
     if (response.statusCode == 200) {
       if (data['status'] == 'SUCCESS') {
         firstname.text=data['firstname'];
