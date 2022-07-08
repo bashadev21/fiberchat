@@ -79,7 +79,7 @@ class _SettingsOptionState extends State<SettingsOption> {
     var w = MediaQuery.of(context).size.width;
     final observer = Provider.of<Observer>(context, listen: false);
     final UserProvider userProvider = Provider.of<UserProvider>(context);
-    userProvider.refrrrID(context);
+    // userProvider.refrrrID(context);
     return PickupLayout(
         scaffold: Fiberchat.getNTPWrappedWidget(Scaffold(
       backgroundColor: Colors.white,
@@ -257,7 +257,7 @@ userProvider.sendtime();
           ListTile(
             onTap: ()async {
               userProvider.sendtime();
-              userProvider.refrrrID(context);
+             // userProvider.refrrrID(context);
               final prefs = await SharedPreferences.getInstance();
               userProvider.adminemail =  prefs.getString('adminuseremail',)!;
               print('kkkkkk'+  userProvider.adminemail.toString());
@@ -311,7 +311,7 @@ userProvider.sendtime();
           ListTile(
             onTap: ()async {
               userProvider.sendtime();
-              userProvider.refrrrID(context);
+             // userProvider.refrrrID(context);
               final prefs = await SharedPreferences.getInstance();
               userProvider.adminemail =  prefs.getString('adminuseremail',)!;
               print('kkkkkk'+  userProvider.adminemail.toString());

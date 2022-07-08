@@ -168,6 +168,18 @@
       <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/build" />
       <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/firexcode/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/firexcode/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/firexcode/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/firexcode/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/firexcode/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/firexcode/build" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/build" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/package/intermediate/example/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/.dart_tool" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

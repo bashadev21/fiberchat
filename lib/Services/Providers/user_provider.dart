@@ -317,9 +317,9 @@ class UserProvider with ChangeNotifier {
   }
   void refrrrID(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    var email= await prefs.getString('adminuseremail',);
+    var email=  prefs.getString('adminuseremail',);
 
-
+print(email.toString()+'sssaa');
     var response = await http.get(Uri.parse('http://www.pandasapi.com/panda_chat/api/get_ref_code?reg_em='+email!),);
     if(response.statusCode==200){
       var responsedata =jsonDecode(response.body);
@@ -430,7 +430,9 @@ class UserProvider with ChangeNotifier {
 
     var jsonBody = response.body;
     var data = json.decode(jsonBody);
-    print(data);
+    print(data.toString()+'resssss');
+    print(url.toString()+'resssss');
+    print(userEmail.text.toString()+'sasasa');
     if (response.statusCode == 200) {
       if (data['status'] == 'SUCCESS') {
         final prefs = await SharedPreferences.getInstance();
@@ -643,7 +645,7 @@ class UserProvider with ChangeNotifier {
         //   title: getTranslated(this.context, 'authh'),
         // ))));
       } else {
-
+userregister();
         await storage.write(
             key: Dbkeys.privateKey, value: documents[0][Dbkeys.privateKey]);
         String? fcmToken = await FirebaseMessaging.instance.getToken();
@@ -784,7 +786,9 @@ class UserProvider with ChangeNotifier {
 
   verifyEmailOTP(String email, String otp) async {
     var query_string = 'reg_em=' + email + '&otp=' + otp;
-    var response = await Dio().get('http://www.pandasapi.com/panda_chat/api/verify_reg_otp?' + query_string);
+    var url='http://www.pandasapi.com/panda_chat/api/verify_reg_otp?' + query_string;
+    print(url);
+    var response = await Dio().get(url);
    
     if (response.statusCode == 200) {
       var data = response.data;

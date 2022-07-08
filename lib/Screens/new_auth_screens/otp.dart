@@ -39,6 +39,7 @@ class OtpWidget extends StatelessWidget {
               ),
 
               PinPut(
+                autofocus: true,
                  controller: userProvider.otpfield,
                   onChanged: (o) {
                     userProvider.codeverify=userProvider.otpfield.text;

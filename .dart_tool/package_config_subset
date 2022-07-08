@@ -1,7 +1,3 @@
-fiberchat
-2.12
-file:///Users/basha/fiberchat/
-file:///Users/basha/fiberchat/lib/
 _fe_analyzer_shared
 2.12
 file:///Users/basha/flutter_sdk/flutter/.pub-cache/hosted/pub.dartlang.org/_fe_analyzer_shared-30.0.0/
@@ -1014,4 +1010,8 @@ fuchsia_remote_debug_protocol
 2.12
 file:///Users/basha/flutter_sdk/flutter/packages/fuchsia_remote_debug_protocol/
 file:///Users/basha/flutter_sdk/flutter/packages/fuchsia_remote_debug_protocol/lib/
+fiberchat
+2.12
+file:///Users/basha/personal/fiberchat/
+file:///Users/basha/personal/fiberchat/lib/
 2
